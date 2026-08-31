@@ -1,0 +1,54 @@
+# Eingefrorene OFI-Konfiguration fuer die EINMALIGE Bestaetigung auf einem
+# frischen Monat (2025-09). Identisch zu ofi.yaml bis auf die im Dev-Sweep
+# (2025-08) identifizierte Zelle: Schwelle 0.4 / Exit 0.2. Nicht anfassen.
+
+data:
+  symbol: BTCUSDT
+  base_interval: 1m
+  data_dir: data
+  use_flow: true
+
+timeframe: 5m
+
+regimes:
+  - name: recent_mix
+    start: "2024-09-01"
+    end: "2025-06-30"
+
+label:
+  horizon_bars: 3
+  threshold_bps: 10
+
+model:
+  num_leaves: 63
+  learning_rate: 0.05
+  n_estimators: 600
+  min_child_samples: 200
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_lambda: 1.0
+  early_stopping_rounds: 50
+  validation_fraction: 0.1
+  weight_by_move: true
+
+backtest:
+  fee_bps_per_side: 4.0
+  slippage_bps_per_side: 1.0
+  signal_threshold: 0.40      # eingefroren aus Dev-Sweep 2025-08
+  exit_threshold: 0.20
+  min_hold_bars: 3
+  allow_short: true
+  sweep_thresholds: [0.4]     # bewusst nur die eingefrorene Zelle
+  exit_threshold_frac: 0.5
+  cost_scenarios_bps_per_side: [1.5, 5.0]
+
+path:
+  horizons: [1, 2, 3, 4, 5, 6]
+  quantiles: [0.1, 0.5, 0.9]
+  model:
+    num_leaves: 31
+    learning_rate: 0.08
+    n_estimators: 250
+    min_child_samples: 200
+
+embargo_bars: 50
