@@ -82,13 +82,16 @@ heißt „handelbar aufwärts", nicht nur „ein Tick höher".
   instabil). Nicht weiter tunen.
 - **Pfadmodell (Kegel + Exkursionen): VALIDIERT** (Coverage 0.79–0.81 bei
   Soll 0.80, Pinball-Skill +12–18 %).
-- **Laufend: OFI-Experiment** (`configs/ofi.yaml`): echte Order-Flow-Features
-  aus Binance-aggTrades (1m-Aggregate: Taker-Buy/Sell-Volumen, Whale-Flow
-  >= 100k USD Notional, Trade-Count-Imbalance). Dev-Test auf 2025-08.
-  **Kill-Kriterium (vorab festgelegt):** Der Sweep muss bei Maker-Kosten
-  (1.5 bps) Zellen mit stabil > 6 bps Brutto pro Round-Trip und positivem
-  Netto-Sharpe zeigen, sonst wird der Kurzfrist-Richtungsansatz beerdigt
-  und der Fokus wandert auf Tages-Signale + 5m-Ausfuehrung (Pfadmodell).
+- **OFI-Experiment: DURCHGEFALLEN, Kurzfrist-Richtung beerdigt.**
+  Dev-Sweep 2025-08 zeigte eine einzelne Zelle (thr 0.4, 11.2 bps/RT) ohne
+  Plateau; die eingefrorene Bestaetigung auf 2025-09 lieferte 2.4 bps/RT
+  und negatives Netto bei Maker-Kosten. Echte aggTrades-Orderflow-Features
+  erschienen nie in den Top-Importances. Damit sind Klines- UND
+  Orderflow-Features fuer 1m/5m-Richtung mit vorab fixierten Kriterien
+  auf frischen Monaten getestet und verworfen — nicht wieder aufmachen.
+- **Aktueller Fokus (Pivot):** Tages-Signale (Momentum + Vol-Targeting +
+  Funding-Overlay, `scripts/daily_strategy.py`) als Richtungsebene,
+  das validierte 5m-Pfadmodell fuer Einstiegs-Timing und Stop/Target.
 
 ## Ehrliche Erwartungshaltung
 
