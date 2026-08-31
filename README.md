@@ -119,7 +119,23 @@ Sechs Kandidaten, je ein Analyst + zwei unabhaengige Skeptiker. Ergebnis:
   nicht; Flips sind informationsgetriebener Flow (Adverse Selection),
   realistischer Nutzen +10-40 bps/Jahr — Live-Detail, kein Experiment.
 
-**Als eingefrorene Backtest-Studien implementiert (KEIN Champion-Tausch):**
+**Studien-Ergebnisse (Colab-Lauf 2026-08-31, eingefrorene Gates):**
+- *Lookback-Ensemble: ADOPTIERT als neuer Champion.* Alle drei Gates
+  bestanden — (b) alle Subperioden positiv (10.0% im Haertetest 2025-26),
+  (c) schlechtester Subperioden-Sharpe 0.29 vs 0.14, (d) Kosten-Drag
+  3.70% vs 4.98% p.a. (1/7-Schritte erzeugen WENIGER Turnover als
+  Voll-Flips). Adoption ausdruecklich wegen Spezifikations-Robustheit;
+  die In-Sample-Deltas (Sharpe 0.89 vs 0.75) sind KEIN Evidenz-Claim.
+  Live/Signale ab jetzt mit ensemble=True.
+- *ETH-Portfolio: Gate (c) FAIL* (Bootstrap 0.893 < 0.95) — per
+  Praeregistrierung kein Champion-Wechsel, keine Nachverhandlung.
+  Protokollierte Fakten: ETH-Bein Sharpe 1.02 (robust gegen 20 bps
+  Kosten und Shortability-Filter), Portfolio schlaegt BTC-only in
+  Punktschaetzung bei Sharpe/DD/CAGR. Ein diskretionaerer 50/50-Split
+  ist eine Risiko-Praeferenz-Option des Users, kein Evidenz-Claim;
+  "Ensemble beide Beine + Portfolio" waere eine NEUE Studie.
+
+**Urspruenglich als eingefrorene Backtest-Studien implementiert:**
 - *Lookback-Ensemble* (`daily_strategy.py`, laeuft automatisch mit):
   7 Member SMA 25..200 x Donchian(0.4*SMA), Champion-Struktur je Member
   (Flat-Zone bleibt erhalten), Position in 1/7-Schritten. Gates vorab:
