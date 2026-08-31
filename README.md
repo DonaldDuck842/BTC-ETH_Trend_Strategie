@@ -100,6 +100,41 @@ heißt „handelbar aufwärts", nicht nur „ein Tick höher".
   Naive Ausfuehrung am Tagesbeginn bleibt. Das Pfadmodell wird fuer
   Groessen-/Exkursionsprognose genutzt (Stops, De-Risking), nicht fuer Timing.
 
+## Verbesserungs-Review (adversarial geprueft)
+
+Sechs Kandidaten, je ein Analyst + zwei unabhaengige Skeptiker. Ergebnis:
+
+**Verworfen (in beiden Panel-Laeufen einstimmig):**
+- *Kontinuierliche Positionsgroesse*: Kostenersparnis real, aber CAGR-Verlust
+  4-8pp sicher, Sharpe-Gewinn unmessbar; tanh-Skalierung = neuer Freiheitsgrad.
+- *Intraday-De-Risking via Pfadmodell*: Ziel-Events (Long + Kaskade) liegen
+  fast alle in den Pfadmodell-Trainingsfenstern — Test haette Power ~0 und
+  wuerde verbrauchte 5m-Monate erneut antasten; auf der Short-Seite wuerde
+  er die Verdiensttage de-risken. Legitimer Kern (schnellere Vol-Reaktion)
+  waere ein separater Kandidat: EWMA-Vol im Tages-Sizing.
+- *Funding-Carry*: Gegen den ehrlichen Benchmark (4-5% risikoarm auf
+  Brachkapital) schrumpft der Zusatznutzen auf ~0.5-1pp CAGR und kauft
+  Perp-Liquidations- und Boersen-Gegenparteirisiko ein.
+- *Maker-Ausfuehrung*: Fee-Arithmetik traegt auf dem unterstellten Venue
+  nicht; Flips sind informationsgetriebener Flow (Adverse Selection),
+  realistischer Nutzen +10-40 bps/Jahr — Live-Detail, kein Experiment.
+
+**Als eingefrorene Backtest-Studien implementiert (KEIN Champion-Tausch):**
+- *Lookback-Ensemble* (`daily_strategy.py`, laeuft automatisch mit):
+  7 Member SMA 25..200 x Donchian(0.4*SMA), Champion-Struktur je Member
+  (Flat-Zone bleibt erhalten), Position in 1/7-Schritten. Gates vorab:
+  (b) alle Subperioden netto positiv, (c) schlechtester Subperioden-Sharpe
+  >= Champion, (d) Kosten-Drag <= Champion +2pp p.a. Bei Ambiguitaet bleibt
+  der Champion; ein Fail beerdigt die Idee ohne Member-Iteration.
+- *ETH-Portfolio-Studie* (`scripts/portfolio_strategy.py`): 50/50-Split
+  BTC/ETH, ETH-Shorts erst ab Perp-Verfuegbarkeit (Shortability-Filter),
+  gepaarter Block-Bootstrap der Sharpe-Differenz. WICHTIG: Die beiden
+  Skeptiker-Panels widersprachen sich hier (einmal 2:0 dagegen, einmal 2:0
+  dafuer) — der Kandidat ist eine Grauzone. Kernpunkte contra: ohne Hebel
+  ist ein Sharpe-Gewinn nicht monetarisierbar, und Ziel-Vol senken liefert
+  denselben DD-Schutz billiger. Studie ja; Adoption braeuchte zusaetzlich
+  eine bewusste Hebel-/Zielvol-Entscheidung.
+
 ## Ehrliche Erwartungshaltung
 
 Kurzfrist-Prediction auf 1m/5m ist die härteste Liga: Das akademisch am

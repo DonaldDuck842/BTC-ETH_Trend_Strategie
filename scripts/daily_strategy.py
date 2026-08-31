@@ -13,6 +13,11 @@ Regeln (bewusst simpel, keine Optimierung):
                (1 Jahr) -> flat (ueberhitzte Long-Positionierung)
   - Kosten:    10 bps pro Seite (Spot-Taker inkl. Slippage)
 
+Zusaetzlich vorab deklariert: Lookback-Ensemble-Vergleich (7 Member,
+SMA 25..200 mit Donchian = 0.4 * SMA-Fenster) gegen den long/short-Champion
+im identischen Fenster ab erstem gueltigem SMA200-Tag — reine
+Backtest-Studie, kein Champion-Tausch.
+
     python scripts/daily_strategy.py                # Standard 2018-01 .. 2026-07
     python scripts/daily_strategy.py --no-funding   # ohne Funding-Overlay
 """
@@ -30,7 +35,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 from btc_predict.daily import (  # noqa: E402
-    backtest, build_positions, load_daily, load_funding, report)
+    ENSEMBLE_SMA_LOOKBACKS, backtest, build_positions, load_daily,
+    load_funding, report, report_diagnostics)
 
 
 def main() -> None:
@@ -77,6 +83,43 @@ def main() -> None:
                 rows.append(report(seg, label))
         print(f"\n== Variante: {name} | Kosten {args.cost_bps} bps/Seite ==")
         print(pd.DataFrame(rows).to_string(index=False))
+
+    # --- Vorab deklarierter Zusatzvergleich: Lookback-Ensemble ---
+    # Reine Backtest-Studie; der Live-/Paper-Champion wird dadurch NICHT
+    # getauscht (Adoption fruehestens nach Neubewertung von Phase 2 auf dem
+    # Ensemble-Trade-Profil). Beide Laeufe im IDENTISCHEN Fenster ab dem
+    # ersten gueltigen SMA200-Tag, identische Kosten; Vergleichs-Champion
+    # ist die long/short-Variante ohne Funding-Overlay.
+    max_lb = max(ENSEMBLE_SMA_LOOKBACKS)
+    if len(daily) >= max_lb + 30:
+        start_ens = daily.index[max_lb - 1]
+        print(f"\n---- Ensemble-Vergleich | Fenster ab erstem gueltigem "
+              f"SMA{max_lb}-Tag: {start_ens.date()} ----")
+        for name, use_ens in [
+                ("champion long/short (SMA200-Fenster)", False),
+                ("lookback-ensemble long/short (SMA200-Fenster)", True)]:
+            frame = build_positions(daily, None, allow_short=True,
+                                    ensemble=use_ens).loc[start_ens:]
+            bt = backtest(frame, args.cost_bps)
+            rows, diag = [], []
+            for label, rng in periods:
+                seg = bt if rng is None else bt.loc[rng[0]:rng[1]]
+                if len(seg) > 30:
+                    rows.append(report(seg, label))
+                    diag.append(report_diagnostics(seg, label, args.cost_bps))
+            print(f"\n== Variante: {name} | Kosten {args.cost_bps} bps/Seite ==")
+            print(pd.DataFrame(rows).to_string(index=False))
+            print("-- Diagnostik je Subperiode (Turnover p.a. statt trades_py; "
+                  "Zerlegung Signal-Flips vs. Vol-Targeting) --")
+            print(pd.DataFrame(diag).to_string(index=False))
+        print("\nEnsemble-Lesart: Entscheidung liegt auf den vorab registrierten")
+        print("Gates (b)/(c)/(d); Gate (e)/Member-Zerlegung ist reine Diagnostik")
+        print("(7 korrelierte Member — KEINE Robustheits-Evidenz). Zu erwartender")
+        print("Charakterwechsel: time_in_mkt ~100% und stetiger Turnover-Drag —")
+        print("muss dokumentiert, nicht wegdiskutiert werden. Bei jeder")
+        print("Ambiguitaet bleibt der Champion. Ein Fail beerdigt die Idee")
+        print("komplett — keine Dead-Band/Flat-Zone-Nachiteration.")
+
     print("\nLesart: Massstab ist v.a. 2025-2026 — positiver (oder klar weniger")
     print("negativer) Sharpe und deutlich geringerer MaxDD als Buy-and-Hold.")
     print("Die Varianten sind vorab deklariert; es wird NICHT die beste pro")

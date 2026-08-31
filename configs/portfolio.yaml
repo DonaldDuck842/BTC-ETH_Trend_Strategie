@@ -1,0 +1,35 @@
+# ============================================================
+# Multi-Asset-Portfolio (Champion-Tagesstrategie je Bein)
+# ============================================================
+# EINGEFRORENE Spezifikation — ein Lauf, kein Nachjustieren nach
+# Sicht der Daten. Alle Gates stehen in scripts/portfolio_strategy.py.
+
+symbols: [BTCUSDT, ETHUSDT]     # nur diese zwei; keine weiteren Coins bei FAIL
+weights: [0.5, 0.5]             # fixer 50/50-Split der PnL-Stroeme
+
+# Warmup: Indikatoren (SMA50, Donchian20, 20d-Vol) ab Binance-Listing
+# ETHUSDT (2017-08-17) berechnen; PnL-Zaehlung erst ab eval_start,
+# damit die Fruehphase nicht durch NaN-Positionen geschoent wird.
+warmup_start: "2017-08-17"
+eval_start: "2018-01-01"
+eval_end: "2026-07-31"
+
+# Champion-Parameter — identisch zum BTC-only-Lauf, KEIN Tuning.
+target_vol: 0.40
+allow_short: true
+cost_bps_per_side: 10.0
+
+# Rein informative, vorab registrierte Sensitivitaeten (kein Gate,
+# kein zweiter Lauf):
+eth_cost_sens_bps: 20.0          # 10 bps fuer ETH 2018 ist grenzwertig optimistisch
+eth_no_short_before: "2019-10-01"  # Binance-Margin/Perp existierte 2018 nicht
+
+# Gate (c): gepaarter Block-Bootstrap auf den taeglich GEPAARTEN
+# PnL-Serien (Portfolio vs. BTC-only) — kein unabhaengiges Resampling
+# beider Equity-Kurven (das zerstoert die ~0.95-Korrelation).
+bootstrap:
+  block_days: 30
+  n_draws: 2000
+  seed: 42
+
+data_dir: data
