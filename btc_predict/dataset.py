@@ -29,18 +29,23 @@ def _prepare_window(bars_1m: pd.DataFrame, cfg: dict) -> Dataset:
     return Dataset(X[valid], y[valid], fwd[valid], pd.Series("", index=X[valid].index))
 
 
-def load_window(start: str, end: str, cfg: dict, synthetic: bool = False,
-                download: bool = True) -> Dataset:
+def load_bars(start: str, end: str, cfg: dict, synthetic: bool = False,
+              download: bool = True) -> pd.DataFrame:
+    """1m-Bars fuer ein Zeitfenster (echt oder synthetisch), inkl. Enddatum."""
     if synthetic:
         end_excl = (pd.Timestamp(end) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-        bars_1m = data_mod.make_synthetic(start, end_excl,
-                                          seed=abs(hash((start, end))) % 2**31)
-    else:
-        months = data_mod.month_range(start, end)
-        bars_1m = data_mod.load_months(
-            cfg["data"]["symbol"], cfg["data"]["base_interval"], months,
-            Path(cfg["data"]["data_dir"]), download=download)
-        bars_1m = bars_1m.loc[start:pd.Timestamp(end).strftime("%Y-%m-%d 23:59:59")]
+        return data_mod.make_synthetic(start, end_excl,
+                                       seed=abs(hash((start, end))) % 2**31)
+    months = data_mod.month_range(start, end)
+    bars_1m = data_mod.load_months(
+        cfg["data"]["symbol"], cfg["data"]["base_interval"], months,
+        Path(cfg["data"]["data_dir"]), download=download)
+    return bars_1m.loc[start:pd.Timestamp(end).strftime("%Y-%m-%d 23:59:59")]
+
+
+def load_window(start: str, end: str, cfg: dict, synthetic: bool = False,
+                download: bool = True) -> Dataset:
+    bars_1m = load_bars(start, end, cfg, synthetic=synthetic, download=download)
     return _prepare_window(bars_1m, cfg)
 
 

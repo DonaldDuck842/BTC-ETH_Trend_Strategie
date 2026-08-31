@@ -67,6 +67,19 @@ backtest:
   exit_threshold_frac: 0.5    # exit = frac * enter im Sweep
   cost_scenarios_bps_per_side: [0.0, 1.5, 5.0]
 
+# ------------------------------------------------------------
+# Pfadprognose (scripts/predict_path.py): direkte Multi-Horizont-
+# Quantilregression — Median-Pfad + Unsicherheitskegel + Docht-Exkursionen.
+# ------------------------------------------------------------
+path:
+  horizons: [1, 2, 3, 4, 5, 6]   # Bars voraus im Ziel-Timeframe (5m -> 30 min)
+  quantiles: [0.1, 0.5, 0.9]
+  model:
+    num_leaves: 31
+    learning_rate: 0.08
+    n_estimators: 250
+    min_child_samples: 200
+
 # Embargo zwischen Training und Test (Bars), verhindert Label-Leakage
 # an den Rändern (Label schaut horizon_bars in die Zukunft).
 embargo_bars: 50

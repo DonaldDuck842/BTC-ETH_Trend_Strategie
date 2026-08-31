@@ -35,7 +35,17 @@ dieselben zwei Befehle — Binance Vision ist von Colab aus erreichbar.
 | `btc_predict/dataset.py` | Regime-Fenster laden, Features+Labels bauen, Überschneidung Training/Test hart verbieten |
 | `btc_predict/model.py` | LightGBM-Multiclass, Validierung = zeitliches Tail-Split je Regime (kein Random-Split) |
 | `btc_predict/evaluate.py` | Klassifikationsmetriken + PnL-Simulation mit Fees/Slippage + **Snooping-Log** |
-| `configs/default.yaml` | Alle Stellschrauben: Timeframe, Regime-Fenster, Label-Horizont/-Schwelle, Kosten, Signal-Schwelle |
+| `btc_predict/path_model.py` | Multi-Horizont-**Pfadprognose**: Quantilregression je Horizont (Median-Pfad + 10–90%-Kegel) plus erwartete Hoch-/Tief-Exkursion („Dochte") |
+| `configs/default.yaml` | Alle Stellschrauben: Timeframe, Regime-Fenster, Label-Horizont/-Schwelle, Kosten, Signal-Schwelle, Pfad-Horizonte |
+
+Zwei Skripte:
+
+- `scripts/run_experiment.py` — Richtungsmodell (up/flat/down) + kostenbewusster
+  Backtest + Schwellen/Kosten-Sweep.
+- `scripts/predict_path.py` — Pfadmodell: 6 Horizonte × 3 Quantile direkt
+  (kein rekursives Kerze-auf-Kerze-Verketten — Fehler wuerden sich potenzieren
+  und prognostizierte Kerzen haben kein echtes Volumen als Feature-Input),
+  Kalibrierungs-Report (Coverage, Pinball-Skill) + Beispiel-Fanchart. |
 
 ## Label-Definition
 
