@@ -12,6 +12,29 @@ import numpy as np
 import pandas as pd
 
 
+def _daily_levels(df: pd.DataFrame) -> pd.DataFrame:
+    """Vortages-Level: Hoch, Tief, VWAP und POC (Preis mit dem meisten
+    Volumen = Liquiditaetscluster). These: an solchen Leveln clustern
+    Limit-Orders, Distanz dazu traegt Information ueber "Gap-Fill"-Zuege."""
+    day = df.index.normalize()
+    rows = []
+    for d, g in df.groupby(day):
+        vol = g["volume"].sum()
+        if vol <= 0 or len(g) < 10:
+            rows.append((d, np.nan, np.nan, np.nan, np.nan))
+            continue
+        counts, edges = np.histogram(g["close"], bins=50, weights=g["volume"])
+        i = int(np.argmax(counts))
+        poc = (edges[i] + edges[i + 1]) / 2
+        vwap = g["quote_volume"].sum() / vol
+        rows.append((d, g["high"].max(), g["low"].min(), poc, vwap))
+    lv = pd.DataFrame(rows, columns=["day", "d_high", "d_low", "d_poc", "d_vwap"])
+    lv = lv.set_index("day").shift(1)  # nur der VORTAG ist bekannt -> kein Leakage
+    out = lv.reindex(day)
+    out.index = df.index
+    return out
+
+
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
     f = pd.DataFrame(index=df.index)
     close = df["close"]
@@ -69,6 +92,18 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     f["body_frac"] = (close - df["open"]) / bar_rng
     f["upper_wick"] = (df["high"] - np.maximum(df["open"], close)) / bar_rng
     f["lower_wick"] = (np.minimum(df["open"], close) - df["low"]) / bar_rng
+
+    # --- Level-/Gap-Features (Orderbuch-These: Liquiditaetscluster) ---
+    lv = _daily_levels(df)
+    for col in ("d_high", "d_low", "d_poc", "d_vwap"):
+        f[f"dist_{col}"] = np.log(close / lv[col])
+    roll_hi_288 = df["high"].rolling(288).max()   # ~1 Tag auf 5m
+    roll_lo_288 = df["low"].rolling(288).min()
+    f["dist_roll_hi_1d"] = np.log(close / roll_hi_288)
+    f["dist_roll_lo_1d"] = np.log(close / roll_lo_288)
+    # Runde 1000er-Level (psychologische Limit-Order-Cluster bei BTC)
+    f["round_1000"] = (close % 1000) / 1000 - 0.5
+    f["round_1000_abs"] = f["round_1000"].abs()
 
     # --- Zeitmerkmale (Intraday-Saisonalitaet) ---
     minutes = df.index.hour * 60 + df.index.minute

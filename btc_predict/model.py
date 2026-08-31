@@ -31,11 +31,27 @@ def _split_by_time(ds: Dataset, val_fraction: float) -> tuple[Dataset, Dataset]:
     return tr, va
 
 
+def _move_weights(fwd_ret: pd.Series) -> pd.Series:
+    """Gewichtet Bars proportional zur Groesse der Folgebewegung (gedeckelt).
+
+    Gegenmittel zur Median-Passivitaet: Das Modell soll die Bars richtig
+    machen, auf denen Geld verdient/verloren wird, statt die vielen
+    ruhigen Bars zu optimieren."""
+    scale = fwd_ret.abs().median()
+    if scale <= 0:
+        return pd.Series(1.0, index=fwd_ret.index)
+    return (fwd_ret.abs() / scale).clip(0.25, 4.0)
+
+
 def train(ds: Dataset, model_cfg: dict) -> lgb.LGBMClassifier:
     tr, va = _split_by_time(ds, model_cfg.get("validation_fraction", 0.1))
     enc = {c: i for i, c in enumerate(CLASS_ORDER)}
     y_tr = tr.y.map(enc).astype(int)
     y_va = va.y.map(enc).astype(int)
+    w_tr = w_va = None
+    if model_cfg.get("weight_by_move", False):
+        w_tr = _move_weights(tr.fwd_ret)
+        w_va = _move_weights(va.fwd_ret)
 
     clf = lgb.LGBMClassifier(
         objective="multiclass",
@@ -53,7 +69,9 @@ def train(ds: Dataset, model_cfg: dict) -> lgb.LGBMClassifier:
     )
     clf.fit(
         tr.X, y_tr,
+        sample_weight=w_tr,
         eval_set=[(va.X, y_va)],
+        eval_sample_weight=[w_va] if w_va is not None else None,
         eval_metric="multi_logloss",
         callbacks=[lgb.early_stopping(model_cfg["early_stopping_rounds"], verbose=False)],
     )

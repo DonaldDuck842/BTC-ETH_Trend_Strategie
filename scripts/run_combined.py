@@ -28,19 +28,28 @@ from btc_predict import path_model as pm  # noqa: E402
 from btc_predict.data import resample  # noqa: E402
 
 
-def gated_signal(proba: pd.DataFrame, preds: dict, enter_thr: float,
+def skew_edge(preds: dict) -> pd.Series:
+    """Kegel-Asymmetrie als Richtungssignal in [-1, 1]: prognostiziert das
+    Pfadmodell deutlich mehr Aufwaerts- als Abwaerts-Exkursion, ist das ein
+    aktives Richtungsurteil — das Gegenmittel zum passiven Median."""
+    up = preds["max_up"][0.5]
+    dn = preds["max_dn"][0.5]
+    return ((up + dn) / (up - dn).replace(0, np.nan)).fillna(0.0).clip(-1, 1)
+
+
+def gated_signal(edge: pd.Series, preds: dict, enter_thr: float,
                  k_cost: float, cost_bps_per_side: float, bt: dict) -> pd.Series:
-    """Richtungs-Edge, genullt wo die prognostizierte Exkursion die Kosten
-    nicht deckt; danach normale Hysterese-Logik."""
-    edge = proba["p_up"] - proba["p_down"]
+    """Edge (beliebige Quelle), genullt wo die prognostizierte Exkursion die
+    Kosten nicht deckt; danach normale Hysterese-Logik."""
     need = k_cost * 2 * cost_bps_per_side / 10_000  # k x Round-Trip, in Log-Return
     up_ok = preds["max_up"][0.5] >= need
     dn_ok = preds["max_dn"][0.5] <= -need
     gated = edge.where((edge > 0) & up_ok | (edge < 0) & dn_ok, 0.0)
     # Proba-Frame so rekonstruieren, dass make_signal exakt die gegatete Edge
     # sieht (p_up - p_down == gated) und die Schwellen-Skala erhalten bleibt.
-    gp = proba.copy()
+    gp = pd.DataFrame(index=edge.index)
     gp["p_up"] = gated.clip(lower=0.0)
+    gp["p_flat"] = 0.0
     gp["p_down"] = (-gated).clip(lower=0.0)
     return ev_mod.make_signal(gp, enter_thr, bt["allow_short"],
                               exit_threshold=bt.get("exit_threshold_frac", 0.5) * enter_thr,
@@ -91,28 +100,40 @@ def main() -> None:
     bh = float(bar_ret.sum() * 100)
     print(f"   Buy-and-Hold des Monats: {bh:+.2f}%  (Drift-Referenz)")
 
+    dir_edge = proba["p_up"] - proba["p_down"]
+    sources = {
+        "direction": dir_edge,                       # Klassifikator-Edge
+        "skew": skew_edge(preds),                    # Kegel-Asymmetrie (Pfadmodell)
+        "blend": (dir_edge + skew_edge(preds)) / 2,  # beide Urteile gemittelt
+    }
+
     rows = []
-    for cost in bt.get("cost_scenarios_bps_per_side", [0.0, 1.5, 5.0]):
-        for thr in bt.get("sweep_thresholds", [0.1, 0.2, 0.3, 0.4, 0.5]):
-            for k in (0.0, 2.0, 4.0):
-                sig = gated_signal(proba, preds, thr, k, max(cost, 1e-9), bt)
-                sim = ev_mod.simulate(sig, bar_ret, cost, cfg["timeframe"])
-                long_share = float((sig > 0).sum() / max((sig != 0).sum(), 1))
-                rows.append({
-                    "cost_bps": cost, "enter_thr": thr, "k_cost_gate": k,
-                    "round_trips": sim["round_trips"],
-                    "gross_bps_per_rt": round(sim["gross_bps_per_round_trip"], 2),
-                    "net_ret_pct": round(sim["total_return_pct"], 2),
-                    "sharpe_net": round(sim["sharpe_net"], 2),
-                    "long_share": round(long_share, 2),
-                })
+    for src_name, edge in sources.items():
+        for cost in bt.get("cost_scenarios_bps_per_side", [0.0, 1.5, 5.0]):
+            for thr in bt.get("sweep_thresholds", [0.1, 0.2, 0.3, 0.4, 0.5]):
+                for k in (0.0, 2.0):
+                    sig = gated_signal(edge, preds, thr, k, max(cost, 1e-9), bt)
+                    sim = ev_mod.simulate(sig, bar_ret, cost, cfg["timeframe"])
+                    long_share = float((sig > 0).sum() / max((sig != 0).sum(), 1))
+                    rows.append({
+                        "source": src_name, "cost_bps": cost, "enter_thr": thr,
+                        "k_cost_gate": k,
+                        "round_trips": sim["round_trips"],
+                        "gross_bps_per_rt": round(sim["gross_bps_per_round_trip"], 2),
+                        "net_ret_pct": round(sim["total_return_pct"], 2),
+                        "sharpe_net": round(sim["sharpe_net"], 2),
+                        "long_share": round(long_share, 2),
+                    })
     sweep = pd.DataFrame(rows)
-    print(sweep.to_string(index=False))
-    best = sweep.loc[sweep["sharpe_net"].idxmax()]
-    print(f"\n   Beste Zelle: thr={best['enter_thr']}, k={best['k_cost_gate']}, "
-          f"Kosten={best['cost_bps']} bps -> Sharpe {best['sharpe_net']}, "
-          f"Netto {best['net_ret_pct']}%")
-    print("   long_share nahe 1.0 bei positivem Buy-and-Hold = Verdacht auf")
+    out_csv = Path("results/combined_sweep.csv")
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    sweep.to_csv(out_csv, index=False)
+    print(f"   Voller Sweep ({len(sweep)} Zellen) -> {out_csv}")
+
+    print("\n   Beste Zelle je Signalquelle x Kostenszenario:")
+    best_rows = sweep.loc[sweep.groupby(["source", "cost_bps"])["sharpe_net"].idxmax()]
+    print(best_rows.to_string(index=False))
+    print("\n   long_share nahe 1.0 bei positivem Buy-and-Hold = Verdacht auf")
     print("   reine Drift-Vereinnahmung statt Signal — auf anderem Monat gegenpruefen.")
 
 

@@ -50,6 +50,8 @@ model:
   reg_lambda: 1.0
   early_stopping_rounds: 50
   validation_fraction: 0.1    # zeitliches Tail-Split je Regime, kein Random-Split
+  weight_by_move: true        # Bars nach Groesse der Folgebewegung gewichten
+                              # (Gegenmittel zur Median-Passivitaet)
 
 # ------------------------------------------------------------
 # Kosten & Handelsregel für die Out-of-Sample-Simulation
