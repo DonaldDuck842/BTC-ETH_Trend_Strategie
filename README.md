@@ -147,6 +147,23 @@ positiver Draws >= 0.95 zeigt. "ETH lief zuletzt besser" ist KEIN
 Wechselgrund — Fuehrungsrotation zwischen den Beinen ist genau der
 Mechanismus, von dem der Split lebt.
 
+**FINALE LIVE-SPEZIFIKATION (Studie E1-E3 bestanden, 2026-08-31):**
+50/50 BTCUSDT/ETHUSDT, je Bein Lookback-Ensemble long/short (7 Member,
+1/7-Schritte) + Vol-Targeting 40% (Cap 1.0), Ausfuehrung naiv zum
+naechsten Tagesbeginn, Kostenannahme 10 bps/Seite. Backtest 2018-2026:
+Sharpe 1.03, CAGR 40.2%, MaxDD -32.3%, alle Subperioden positiv
+(Haertetest 2025-26: +22.9%). Taeglicher Report: `scripts/live_signal.py`.
+
+**Paper-Trading-Phase (vorab registriert):** Vor jedem Einsatz echten
+Kapitals mindestens 60 protokollierte Handelstage via
+`scripts/live_signal.py` (Log: results/paper_log.csv, extern sichern).
+Go-Live-Kriterium ist OPERATIV, nicht performance-basiert: (1) >= 60
+Log-Tage mit hoechstens 5 Luecken, (2) die geloggten Zielpositionen
+reproduzieren sich aus den Tagesdaten (kein Implementierungsdrift),
+(3) der User legt VOR Go-Live die Kapitalgroesse fest. Paper-PnL
+entscheidet ausdruecklich NICHT ueber Go-Live — 60 Tage sind Rauschen;
+die Phase prueft den Prozess, nicht die Strategie (die ist backtested).
+
 **Urspruenglich als eingefrorene Backtest-Studien implementiert:**
 - *Lookback-Ensemble* (`daily_strategy.py`, laeuft automatisch mit):
   7 Member SMA 25..200 x Donchian(0.4*SMA), Champion-Struktur je Member
