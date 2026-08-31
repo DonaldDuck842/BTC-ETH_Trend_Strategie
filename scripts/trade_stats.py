@@ -94,7 +94,9 @@ def main() -> None:
             daily = resample(make_synthetic("2021-01-01", "2023-01-01",
                                             seed=21 + i), "1d")
         else:
-            warmup = (pd.Timestamp(args.start) - pd.Timedelta(days=290))
+            # Binance-Historie beginnt 2017-08 — frueher gibt es keine Monats-Zips.
+            warmup = max(pd.Timestamp(args.start) - pd.Timedelta(days=290),
+                         pd.Timestamp("2017-08-01"))
             daily = load_daily(sym, warmup.strftime("%Y-%m-%d"), args.end,
                                Path("data"))
         frame = build_positions(daily, None, allow_short=True, ensemble=True)
