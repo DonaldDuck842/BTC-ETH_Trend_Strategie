@@ -89,9 +89,16 @@ heißt „handelbar aufwärts", nicht nur „ein Tick höher".
   erschienen nie in den Top-Importances. Damit sind Klines- UND
   Orderflow-Features fuer 1m/5m-Richtung mit vorab fixierten Kriterien
   auf frischen Monaten getestet und verworfen — nicht wieder aufmachen.
-- **Aktueller Fokus (Pivot):** Tages-Signale (Momentum + Vol-Targeting +
-  Funding-Overlay, `scripts/daily_strategy.py`) als Richtungsebene,
-  das validierte 5m-Pfadmodell fuer Einstiegs-Timing und Stop/Target.
+- **Champion: Tages-Strategie long/short Momentum + Vol-Targeting**
+  (`btc_predict/daily.py`): einzige Variante mit positivem Ergebnis in
+  allen Subperioden 2018-2026 (CAGR 36%, Sharpe 0.77, MaxDD -35% vs -81%
+  Buy-and-Hold). Funding-Overlay verworfen (kostete ueberall Rendite).
+- **Phase 2 (Einstiegs-Timing via Pfadmodell): DURCHGEFALLEN.** Gepoolt
+  ueber alle Out-of-Training-Fenster (159 Flips, 5.6 Jahre): -5.6 bps/Flip,
+  t=-1.38. Median +0.9 aber fetter linker Tail — beim Momentum-Ausbruch
+  auf den Dip zu warten kostet gelegentlich brutal (2018-2020: -13.4 bps).
+  Naive Ausfuehrung am Tagesbeginn bleibt. Das Pfadmodell wird fuer
+  Groessen-/Exkursionsprognose genutzt (Stops, De-Risking), nicht fuer Timing.
 
 ## Ehrliche Erwartungshaltung
 
