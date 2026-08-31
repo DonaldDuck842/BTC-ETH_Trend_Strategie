@@ -57,8 +57,15 @@ model:
 backtest:
   fee_bps_per_side: 4.0       # Perp-Taker ~4–5 bps; Spot-Taker eher 10
   slippage_bps_per_side: 1.0
-  signal_threshold: 0.10      # handle nur wenn P(up) - P(down) > threshold
+  signal_threshold: 0.30      # Einstieg nur wenn P(up) - P(down) > threshold
+  exit_threshold: 0.10        # Hysterese: Ausstieg erst wenn Edge darunter faellt
+  min_hold_bars: 3            # Mindesthaltedauer = Label-Horizont
   allow_short: true
+  # Sweep-Diagnose: Einstiegsschwellen x Kosten pro Seite (bps).
+  # 0 = friktionslos, 1.5 ~ Maker auf Perps, 5 ~ Taker inkl. Slippage.
+  sweep_thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
+  exit_threshold_frac: 0.5    # exit = frac * enter im Sweep
+  cost_scenarios_bps_per_side: [0.0, 1.5, 5.0]
 
 # Embargo zwischen Training und Test (Bars), verhindert Label-Leakage
 # an den Rändern (Label schaut horizon_bars in die Zukunft).

@@ -71,11 +71,17 @@ def main() -> None:
           f"bei {cls['n_directional_calls']:,} Richtungs-Calls")
     print(f"   Trades            : {net['n_trades']:,} | Time in Market: "
           f"{net['time_in_market']:.1%}")
+    print(f"   Ø Haltedauer      : {net['avg_hold_bars']:.1f} Bars | "
+          f"Brutto/Round-Trip: {net['gross_bps_per_round_trip']:+.2f} bps")
     print(f"   Brutto-Return     : {net['total_gross_return_pct']:+.2f}%  "
           f"(Sharpe brutto {results['gross_sharpe']:+.2f})")
     print(f"   Kosten bezahlt    : {net['cost_paid_pct']:.2f}%")
     print(f"   NETTO-Return      : {net['total_return_pct']:+.2f}%  "
           f"(Sharpe netto {net['sharpe_net']:+.2f})")
+
+    print("\n== Sweep: Einstiegsschwelle x Kosten (Diagnose, kein Parameter-Shopping) ==")
+    sweep = ev_mod.threshold_cost_sweep(test_ds, proba, cfg)
+    print(sweep.to_string(index=False))
 
     n_evals = ev_mod.log_evaluation(cfg, args.test_month, results)
     if n_evals > 1:

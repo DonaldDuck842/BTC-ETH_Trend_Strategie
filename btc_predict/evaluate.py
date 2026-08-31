@@ -21,14 +21,36 @@ BARS_PER_YEAR = {"1m": 525_600, "5m": 105_120}
 
 
 def make_signal(proba: pd.DataFrame, signal_threshold: float,
-                allow_short: bool = True) -> pd.Series:
-    """Position in {-1, 0, +1} aus den Klassen-Wahrscheinlichkeiten."""
-    edge = proba["p_up"] - proba["p_down"]
-    sig = pd.Series(0.0, index=proba.index)
-    sig[edge > signal_threshold] = 1.0
-    if allow_short:
-        sig[edge < -signal_threshold] = -1.0
-    return sig
+                allow_short: bool = True, exit_threshold: float | None = None,
+                min_hold_bars: int = 1) -> pd.Series:
+    """Position in {-1, 0, +1} aus den Klassen-Wahrscheinlichkeiten.
+
+    Mit Hysterese gegen Signal-Flackern: Einstieg erst wenn
+    |p_up - p_down| > signal_threshold, Ausstieg erst wenn die Edge in
+    Positionsrichtung unter exit_threshold faellt UND die Mindesthaltedauer
+    erreicht ist. Flip nur bei starkem Gegensignal.
+    """
+    edge = (proba["p_up"] - proba["p_down"]).to_numpy()
+    if exit_threshold is None:
+        exit_threshold = signal_threshold  # klassisches Verhalten ohne Hysterese
+    pos = np.zeros(len(edge))
+    cur, hold = 0.0, 0
+    for t in range(len(edge)):
+        e = edge[t]
+        if cur == 0.0:
+            if e > signal_threshold:
+                cur, hold = 1.0, 0
+            elif allow_short and e < -signal_threshold:
+                cur, hold = -1.0, 0
+        else:
+            hold += 1
+            if hold >= min_hold_bars:
+                if allow_short and cur * e < -signal_threshold:
+                    cur, hold = -cur, 0          # starkes Gegensignal: Flip
+                elif cur * e < exit_threshold:
+                    cur, hold = 0.0, 0           # Edge weg: raus
+        pos[t] = cur
+    return pd.Series(pos, index=proba.index)
 
 
 def simulate(signal: pd.Series, bar_returns: pd.Series, cost_bps_per_side: float,
@@ -53,8 +75,14 @@ def simulate(signal: pd.Series, bar_returns: pd.Series, cost_bps_per_side: float
 
     in_pos = pos != 0
     avg_gross_bps = float(gross[in_pos].mean() * 10_000) if in_pos.any() else 0.0
+    round_trips = float(turnover.sum() / 2)
+    gross_per_rt_bps = float(gross.sum() * 10_000 / round_trips) if round_trips else 0.0
+    avg_hold = float(in_pos.sum() / round_trips) if round_trips else 0.0
 
     return {
+        "round_trips": round_trips,
+        "gross_bps_per_round_trip": gross_per_rt_bps,
+        "avg_hold_bars": avg_hold,
         "total_return_pct": float(pnl.sum() * 100),
         "total_gross_return_pct": float(gross.sum() * 100),
         "sharpe_net": sharpe,
@@ -88,7 +116,9 @@ def evaluate_month(ds_test: Dataset, proba: pd.DataFrame, cfg: dict) -> dict:
     bt = cfg["backtest"]
     tf = cfg["timeframe"]
     cost = bt["fee_bps_per_side"] + bt["slippage_bps_per_side"]
-    signal = make_signal(proba, bt["signal_threshold"], bt["allow_short"])
+    signal = make_signal(proba, bt["signal_threshold"], bt["allow_short"],
+                         exit_threshold=bt.get("exit_threshold"),
+                         min_hold_bars=bt.get("min_hold_bars", 1))
 
     # Simulation auf 1-Bar-Renditen: ret_1 zum Zeitpunkt t ist der Return des
     # Bars t; simulate() verschiebt das Signal um einen Bar, sodass das Signal
@@ -106,6 +136,39 @@ def evaluate_month(ds_test: Dataset, proba: pd.DataFrame, cfg: dict) -> dict:
         "equity_curve": sim["equity_curve"],
         "signal": signal,
     }
+
+
+def threshold_cost_sweep(ds_test: Dataset, proba: pd.DataFrame, cfg: dict) -> pd.DataFrame:
+    """Netto-Ergebnis ueber ein Raster aus Einstiegsschwellen und Kosten-Szenarien.
+
+    Zeigt in einem Lauf, ob es IRGENDEINE Kombination aus Selektivitaet und
+    Ausfuehrungsqualitaet gibt, bei der das Signal nach Kosten ueberlebt —
+    und wo die Gewinnschwelle liegt. Ein Raster auf einem Monat ist bewusst
+    Diagnose, keine Parameterwahl: Parameter danach fixieren und auf einem
+    FRISCHEN Monat bestaetigen.
+    """
+    bt = cfg["backtest"]
+    tf = cfg["timeframe"]
+    bar_ret = ds_test.X["ret_1"]
+    scenarios = bt.get("cost_scenarios_bps_per_side",
+                       [0.0, 1.5, bt["fee_bps_per_side"] + bt["slippage_bps_per_side"]])
+    rows = []
+    for thr in bt.get("sweep_thresholds", [0.1, 0.2, 0.3, 0.4, 0.5]):
+        sig = make_signal(proba, thr, bt["allow_short"],
+                          exit_threshold=bt.get("exit_threshold_frac", 0.5) * thr,
+                          min_hold_bars=bt.get("min_hold_bars", 1))
+        for cost in scenarios:
+            sim = simulate(sig, bar_ret, cost, tf)
+            rows.append({
+                "enter_thr": thr,
+                "cost_bps_side": cost,
+                "n_round_trips": sim["round_trips"],
+                "avg_hold_bars": round(sim["avg_hold_bars"], 1),
+                "gross_bps_per_rt": round(sim["gross_bps_per_round_trip"], 2),
+                "net_return_pct": round(sim["total_return_pct"], 2),
+                "sharpe_net": round(sim["sharpe_net"], 2),
+            })
+    return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
