@@ -82,12 +82,12 @@ def load_leg_daily(symbol: str, warmup_start: str, end: str, data_dir: Path,
 
 def run_leg(daily: pd.DataFrame, eval_start: str, eval_end: str,
             target_vol: float, allow_short: bool,
-            cost_bps: float) -> pd.DataFrame:
+            cost_bps: float, ensemble: bool = False) -> pd.DataFrame:
     """Champion-Positionen + Backtest auf der VOLLEN Historie (inkl. Warmup),
     PnL-Zaehlung erst ab eval_start — so sind SMA50/Donchian20/20d-Vol am
     ersten Eval-Tag bereits gefuellt."""
     frame = build_positions(daily, None, target_vol=target_vol,
-                            allow_short=allow_short)
+                            allow_short=allow_short, ensemble=ensemble)
     bt = backtest(frame, cost_bps)
     return bt.loc[eval_start:eval_end]
 
@@ -286,6 +286,49 @@ def main() -> None:
     print("bleibt BTC-only Champion. Der modale erwartete Ausgang ist FAIL an")
     print("(c); das ist dann kein Anlass fuer Gate-Diskussionen. Bei Umstieg:")
     print("ETH-Flips naiv zum Tagesschluss, ohne Phase-2-Timing.")
+
+    # ----- FINALE SPEZIFIKATIONS-STUDIE (vorab registriert, EIN Lauf) -----
+    # Nach der Ensemble-Adoption auf BTC ist die letzte offene Design-Frage:
+    # laeuft auch das ETH-Bein im 50/50-Portfolio mit dem Lookback-Ensemble?
+    # Kandidat: Ensemble auf BEIDEN Beinen (eine konsistente Spezifikation).
+    # Vergleichsbasis: das oben gerechnete Einzel-Lookback-Portfolio.
+    # Gates (gleiche Form wie bei der BTC-Ensemble-Adoption):
+    #   (E1) alle Subperioden des Ensemble-Portfolios netto positiv;
+    #   (E2) schlechtester Subperioden-Sharpe >= schlechtester des
+    #        Einzel-Lookback-Portfolios;
+    #   (E3) Kosten-Drag (Turnover x Kosten p.a.) <= Einzel-Portfolio +2pp.
+    # PASS => Live-Spezifikation ist Ensemble-50/50. FAIL => Live-Spez bleibt
+    # BTC-Ensemble + ETH-Einzel-Lookback im 50/50 (jeweils fuer sich
+    # validiert); KEINE Member- oder Gewichts-Iteration.
+    if len(symbols) >= 2:
+        legs_ens = {sym: run_leg(dailies[sym], eval_start, eval_end, tvol,
+                                 allow_short, cost, ensemble=True)
+                    for sym in symbols}
+        pf_ens = build_portfolio(legs_ens, weights)
+        print(f"\n== FINALE STUDIE: Ensemble beide Beine, Portfolio "
+              f"{'/'.join(str(weights[s]) for s in symbols)} ==")
+        tbl_ens = subperiod_table(pf_ens)
+        print(tbl_ens.to_string(index=False))
+
+        def drag_pa(bt: pd.DataFrame) -> float:
+            years = len(bt) / 365
+            return float(bt["turnover"].sum() * cost / 10_000 / years * 100)
+
+        tbl_base = subperiod_table(pf)
+        sub_ens = tbl_ens[tbl_ens["period"] != "gesamt"]
+        sub_base = tbl_base[tbl_base["period"] != "gesamt"]
+        e1 = bool((sub_ens["cagr_pct"] > 0).all())
+        e2 = float(sub_ens["sharpe"].min()) >= float(sub_base["sharpe"].min())
+        e3 = drag_pa(pf_ens) <= drag_pa(pf) + 2.0
+        print(f"\n(E1) alle Subperioden positiv: "
+              f"{list(sub_ens['cagr_pct'])} -> {'PASS' if e1 else 'FAIL'}")
+        print(f"(E2) schlechtester Subperioden-Sharpe {sub_ens['sharpe'].min():.2f} "
+              f">= {sub_base['sharpe'].min():.2f} -> {'PASS' if e2 else 'FAIL'}")
+        print(f"(E3) Kosten-Drag {drag_pa(pf_ens):.2f}% <= "
+              f"{drag_pa(pf):.2f}% + 2pp -> {'PASS' if e3 else 'FAIL'}")
+        verdict = 'Ensemble-50/50 wird Live-Spezifikation' if (e1 and e2 and e3) \
+            else 'Live-Spez bleibt BTC-Ensemble + ETH-Einzel-Lookback im 50/50'
+        print(f"=> {verdict}")
 
 
 if __name__ == "__main__":

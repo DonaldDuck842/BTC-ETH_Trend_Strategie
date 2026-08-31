@@ -135,6 +135,18 @@ Sechs Kandidaten, je ein Analyst + zwei unabhaengige Skeptiker. Ergebnis:
   ist eine Risiko-Praeferenz-Option des Users, kein Evidenz-Claim;
   "Ensemble beide Beine + Portfolio" waere eine NEUE Studie.
 
+**Beschluss (User, 2026-08-31): 50/50 BTC/ETH wird das Live-Buch.**
+Die finale Spezifikations-Studie (Ensemble auf beiden Beinen, Gates E1-E3
+in `scripts/portfolio_strategy.py`) entscheidet die letzte Design-Frage.
+Alle drei Buecher (BTC-only, ETH-only, 50/50) werden dauerhaft
+mitreportet — als Diagnose. **Vorab registrierte Wechselregel:** Ein
+Umstieg auf ein Einzel-Bein (z.B. ETH-only) ist NUR zulaessig, wenn auf
+mindestens 3 Jahren Paper-/Live-Daten (nicht Backtest!) der gepaarte
+Block-Bootstrap der Sharpe-Differenz Einzel-Bein minus 50/50 einen Anteil
+positiver Draws >= 0.95 zeigt. "ETH lief zuletzt besser" ist KEIN
+Wechselgrund — Fuehrungsrotation zwischen den Beinen ist genau der
+Mechanismus, von dem der Split lebt.
+
 **Urspruenglich als eingefrorene Backtest-Studien implementiert:**
 - *Lookback-Ensemble* (`daily_strategy.py`, laeuft automatisch mit):
   7 Member SMA 25..200 x Donchian(0.4*SMA), Champion-Struktur je Member
