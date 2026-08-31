@@ -93,6 +93,24 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     f["upper_wick"] = (df["high"] - np.maximum(df["open"], close)) / bar_rng
     f["lower_wick"] = (np.minimum(df["open"], close) - df["low"]) / bar_rng
 
+    # --- Echte Order-Flow-Features (aus aggTrades, falls vorhanden) ---
+    if "tb_vol" in df.columns:
+        tot_vol = (df["tb_vol"] + df["ts_vol"]).replace(0, np.nan)
+        ofi = ((df["tb_vol"] - df["ts_vol"]) / tot_vol).fillna(0.0)
+        f["ofi"] = ofi
+        f["ofi_5"] = ofi.rolling(5).mean()
+        f["ofi_20"] = ofi.rolling(20).mean()
+        big_tot = (df["big_tb_vol"] + df["big_ts_vol"]).replace(0, np.nan)
+        f["big_ofi"] = ((df["big_tb_vol"] - df["big_ts_vol"]) / big_tot).fillna(0.0)
+        f["big_ofi_5"] = f["big_ofi"].rolling(5).mean()
+        f["big_share"] = (big_tot / tot_vol).fillna(0.0)
+        tot_cnt = (df["tb_cnt"] + df["ts_cnt"]).replace(0, np.nan)
+        f["cnt_imb"] = ((df["tb_cnt"] - df["ts_cnt"]) / tot_cnt).fillna(0.0)
+        size = (tot_vol / tot_cnt)
+        size_mean = size.rolling(60).mean()
+        size_std = size.rolling(60).std().replace(0, np.nan)
+        f["trade_size_z"] = ((size - size_mean) / size_std).fillna(0.0)
+
     # --- Level-/Gap-Features (Orderbuch-These: Liquiditaetscluster) ---
     lv = _daily_levels(df)
     for col in ("d_high", "d_low", "d_poc", "d_vwap"):

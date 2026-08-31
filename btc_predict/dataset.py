@@ -40,6 +40,13 @@ def load_bars(start: str, end: str, cfg: dict, synthetic: bool = False,
     bars_1m = data_mod.load_months(
         cfg["data"]["symbol"], cfg["data"]["base_interval"], months,
         Path(cfg["data"]["data_dir"]), download=download)
+    if cfg["data"].get("use_flow", False):
+        flow = data_mod.load_flow_months(cfg["data"]["symbol"], months,
+                                         Path(cfg["data"]["data_dir"]),
+                                         download=download)
+        bars_1m = bars_1m.join(flow, how="left")
+        flow_cols = ["tb_vol", "ts_vol", "tb_cnt", "ts_cnt", "big_tb_vol", "big_ts_vol"]
+        bars_1m[flow_cols] = bars_1m[flow_cols].fillna(0.0)
     return bars_1m.loc[start:pd.Timestamp(end).strftime("%Y-%m-%d 23:59:59")]
 
 

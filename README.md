@@ -75,6 +75,21 @@ heißt „handelbar aufwärts", nicht nur „ein Tick höher".
    Synthetik-Modus (`--synthetic`) muss immer ≈ Zufall + negativen
    Netto-PnL liefern; tut er das nicht, ist Leakage in der Pipeline.
 
+## Experiment-Status
+
+- **5m-Richtung aus Klines-Features: DURCHGEFALLEN** (Validierung 2025-01..07,
+  eingefrorene Config: 2/5 Monate positiv bei Maker-Kosten, Brutto-Edge
+  instabil). Nicht weiter tunen.
+- **Pfadmodell (Kegel + Exkursionen): VALIDIERT** (Coverage 0.79–0.81 bei
+  Soll 0.80, Pinball-Skill +12–18 %).
+- **Laufend: OFI-Experiment** (`configs/ofi.yaml`): echte Order-Flow-Features
+  aus Binance-aggTrades (1m-Aggregate: Taker-Buy/Sell-Volumen, Whale-Flow
+  >= 100k USD Notional, Trade-Count-Imbalance). Dev-Test auf 2025-08.
+  **Kill-Kriterium (vorab festgelegt):** Der Sweep muss bei Maker-Kosten
+  (1.5 bps) Zellen mit stabil > 6 bps Brutto pro Round-Trip und positivem
+  Netto-Sharpe zeigen, sonst wird der Kurzfrist-Richtungsansatz beerdigt
+  und der Fokus wandert auf Tages-Signale + 5m-Ausfuehrung (Pfadmodell).
+
 ## Ehrliche Erwartungshaltung
 
 Kurzfrist-Prediction auf 1m/5m ist die härteste Liga: Das akademisch am

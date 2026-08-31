@@ -24,6 +24,9 @@ def main() -> None:
     ap.add_argument("--config", default="configs/default.yaml")
     ap.add_argument("--test-month", action="append", default=[],
                     help="Zusaetzlich zu ladender Testmonat (mehrfach moeglich)")
+    ap.add_argument("--aggtrades", action="store_true",
+                    help="Auch aggTrades-Flow laden (gross! ~1-2 GB Download "
+                         "pro Monat, gespeichert werden nur 1m-Aggregate)")
     args = ap.parse_args()
 
     cfg = yaml.safe_load(Path(args.config).read_text())
@@ -36,10 +39,15 @@ def main() -> None:
     symbol = cfg["data"]["symbol"]
     interval = cfg["data"]["base_interval"]
     data_dir = Path(cfg["data"]["data_dir"])
-    print(f"{len(months)} Monate {symbol} {interval} -> {data_dir}/")
+    want_flow = args.aggtrades or cfg["data"].get("use_flow", False)
+    print(f"{len(months)} Monate {symbol} {interval} -> {data_dir}/"
+          + (" (+ aggTrades-Flow)" if want_flow else ""))
     for m in months:
         path = data_mod.download_month(symbol, interval, m, data_dir)
-        print(f"  ok {m} -> {path}")
+        print(f"  ok {m} klines -> {path}")
+        if want_flow:
+            fpath = data_mod.download_aggtrades_month(symbol, m, data_dir)
+            print(f"  ok {m} flow   -> {fpath}")
 
 
 if __name__ == "__main__":

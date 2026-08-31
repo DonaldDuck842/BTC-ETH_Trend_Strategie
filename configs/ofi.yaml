@@ -1,0 +1,61 @@
+# ============================================================
+# OFI-Experiment: Kurzfrist-Richtung mit echten Order-Flow-Daten
+# (Binance aggTrades, aggregiert auf 1m). Letzte Kurzfrist-Karte —
+# mit vorab definiertem Kill-Kriterium, siehe README.
+# ============================================================
+# Trainingsfenster bewusst kuerzer und juenger als beim Klines-Modell:
+# Mikrostruktur-Signale zerfallen schnell, und 3 Jahre aggTrades waeren
+# ~40 GB Download. Die als TEST verbrauchten Monate 2025-01..07 duerfen
+# hier als TRAINING dienen (verbraucht heisst nur: nie wieder testen).
+# Frische Testmonate: 2025-08 (Dev), spaeter 2025-09+ (Bestaetigung).
+
+data:
+  symbol: BTCUSDT
+  base_interval: 1m
+  data_dir: data
+  use_flow: true              # aggTrades-Aggregate zu den Klines joinen
+
+timeframe: 5m
+
+regimes:
+  - name: recent_mix          # 10 Monate juengste Mikrostruktur
+    start: "2024-09-01"
+    end: "2025-06-30"
+
+label:
+  horizon_bars: 3
+  threshold_bps: 10
+
+model:
+  num_leaves: 63
+  learning_rate: 0.05
+  n_estimators: 600
+  min_child_samples: 200
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_lambda: 1.0
+  early_stopping_rounds: 50
+  validation_fraction: 0.1
+  weight_by_move: true
+
+backtest:
+  fee_bps_per_side: 4.0
+  slippage_bps_per_side: 1.0
+  signal_threshold: 0.30
+  exit_threshold: 0.10
+  min_hold_bars: 3
+  allow_short: true
+  sweep_thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
+  exit_threshold_frac: 0.5
+  cost_scenarios_bps_per_side: [0.0, 1.5, 5.0]
+
+path:
+  horizons: [1, 2, 3, 4, 5, 6]
+  quantiles: [0.1, 0.5, 0.9]
+  model:
+    num_leaves: 31
+    learning_rate: 0.08
+    n_estimators: 250
+    min_child_samples: 200
+
+embargo_bars: 50
