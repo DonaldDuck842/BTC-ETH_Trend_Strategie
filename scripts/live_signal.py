@@ -31,7 +31,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from btc_predict.daily import build_positions  # noqa: E402
 from btc_predict.data import make_synthetic, resample  # noqa: E402
 
-KLINES_API = "https://api.binance.com/api/v3/klines"
+# data-api.binance.vision ist Binances offizieller Marktdaten-Spiegel ohne
+# Geo-Block (noetig fuer GitHub-Actions-Runner in den USA); Fallback Haupt-API.
+KLINES_APIS = ("https://data-api.binance.vision/api/v3/klines",
+               "https://api.binance.com/api/v3/klines")
 SYMBOLS = ("BTCUSDT", "ETHUSDT")
 WEIGHTS = {"BTCUSDT": 0.5, "ETHUSDT": 0.5}
 LOG_PATH = Path("results/paper_log.csv")
@@ -40,11 +43,19 @@ LOG_PATH = Path("results/paper_log.csv")
 def fetch_recent_daily(symbol: str, n_days: int = 420) -> pd.DataFrame:
     """Juengste Tageskerzen direkt von der Spot-API (genug Warmup fuer
     SMA200 + Vol-Fenster). Die letzte, noch laufende Kerze wird verworfen."""
-    resp = requests.get(KLINES_API, params={
-        "symbol": symbol, "interval": "1d", "limit": min(n_days, 1000)},
-        timeout=60)
-    resp.raise_for_status()
-    rows = resp.json()
+    rows, last_err = None, None
+    for api in KLINES_APIS:
+        try:
+            resp = requests.get(api, params={
+                "symbol": symbol, "interval": "1d",
+                "limit": min(n_days, 1000)}, timeout=60)
+            resp.raise_for_status()
+            rows = resp.json()
+            break
+        except Exception as exc:  # naechsten Endpoint probieren
+            last_err = exc
+    if rows is None:
+        raise RuntimeError(f"Keine Kursdaten fuer {symbol}: {last_err}")
     df = pd.DataFrame(rows, columns=[
         "open_time", "open", "high", "low", "close", "volume", "close_time",
         "qv", "n", "tb", "tq", "ig"])

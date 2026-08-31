@@ -154,6 +154,38 @@ naechsten Tagesbeginn, Kostenannahme 10 bps/Seite. Backtest 2018-2026:
 Sharpe 1.03, CAGR 40.2%, MaxDD -32.3%, alle Subperioden positiv
 (Haertetest 2025-26: +22.9%). Taeglicher Report: `scripts/live_signal.py`.
 
+**EWMA-Vol-Sizing: DURCHGEFALLEN und beerdigt** (Colab-Lauf 2026-08-31):
+Gate V2 knapp verfehlt (schlechtester Subperioden-Sharpe 0.59 vs 0.62),
+alle Kennzahlen praktisch aequivalent (Sharpe 1.02 vs 1.03). Bei
+Gleichstand bleibt der Amtsinhaber; kein Lambda-Tuning. Damit ist die
+Forschungsphase geschlossen — alle offenen Kandidaten sind entschieden.
+
+**News-Filter: NICHT VERFOLGT** (Begruendung protokolliert): Mechanismus
+redundant zu Momentum + Vol-Targeting (der Preis weiss von der News
+zuerst), keine saubere freie Point-in-Time-News-Historie (Look-Ahead in
+kuratierten Archiven), strukturell der Zwilling des beerdigten
+Funding-Overlays. News-Disziplin ist eine Betriebsregel, kein Signal.
+
+**Betrieb (automatisiert):** `.github/workflows/daily-signal.yml` fuehrt
+den taeglichen Lauf um 00:10 UTC aus und committet results/paper_log.csv
+ins Repo (Marktdaten via data-api.binance.vision, geo-block-frei).
+
+**Drawdown-Protokoll (vorab registriert, gilt ab Paper-Phase):**
+Eingriffe ins laufende System passieren NUR nach dieser Regel, nie nach
+Schlagzeile oder Gefuehl:
+- Live-Drawdown bis -32% (historisches Maximum): normaler Betrieb,
+  keine Aktion. Das ist der eingepreiste Preis der Strategie.
+- Live-Drawdown unter -40%: Revalidierungs-Trigger — die Strategie
+  laeuft regelkonform weiter, parallel wird eine ausserplanmaessige
+  Out-of-Sample-Revalidierung gestartet; Abschalten erst nach deren
+  Ergebnis, niemals am selben Tag.
+- Kapital erhoehen/senken: nur zu Quartalsterminen, nie intra-Drawdown.
+- Jaehrliche Revalidierung (jeweils Januar): die frischen 12 Monate als
+  Out-of-Sample-Test der eingefrorenen Spezifikation; Kill-Kriterium:
+  zwei aufeinanderfolgende Jahres-Tests mit negativem Netto-PnL BEI
+  gleichzeitig positivem Buy-and-Hold-Umfeld => System gilt als
+  zerfallen und wird abgeschaltet, nicht nachgetunt.
+
 **Paper-Trading-Phase (vorab registriert):** Vor jedem Einsatz echten
 Kapitals mindestens 60 protokollierte Handelstage via
 `scripts/live_signal.py` (Log: results/paper_log.csv, extern sichern).

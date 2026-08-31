@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 data/
-results/
+results/*
+!results/paper_log.csv
 .venv/
 .ipynb_checkpoints/

@@ -1,0 +1,39 @@
+name: Daily Signal
+
+# Taeglicher Paper-Trading-Lauf: 00:10 UTC (kurz nach Tagesschluss der
+# UTC-Tageskerze). Das Paper-Log wird direkt ins Repo committet — kein
+# Colab, kein Drive, keine vergessenen Tage.
+on:
+  schedule:
+    - cron: "10 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  signal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -q pandas numpy requests
+      - name: Run daily signal
+        run: python scripts/live_signal.py | tee signal_report.txt
+      - name: Commit paper log
+        run: |
+          git config user.name "signal-bot"
+          git config user.email "signal-bot@users.noreply.github.com"
+          git pull --rebase
+          git add results/paper_log.csv
+          git commit -m "paper log $(date -u +%F)" || echo "keine Aenderung"
+          git push
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-report-${{ github.run_number }}
+          path: signal_report.txt
+          retention-days: 30
