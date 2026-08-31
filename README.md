@@ -15,9 +15,14 @@ validiert und täglich automatisch ausgeführt (aktuell im Paper-Trading).
 | Tagesreport zum Nachlesen | als Artifact an jedem Action-Lauf |
 | Phase | **Paper-Trading** (Ziel: ≥ 60 protokollierte Tage vor Go-Live) |
 
-Das Log enthält pro Tag und Coin die Zielposition des Systems
-(`target_pos`, Anteil des Kapitals, negativ = short) und den Referenzkurs
-(`ref_close`). Daraus rechnet der tägliche Report den bisherigen Paper-PnL.
+Das Log enthält pro Tag und Coin die Zielposition des Systems und den
+Referenzkurs (`ref_close`, Tagesschluss in USD). **Einheit von
+`target_pos`: Anteil des Kapitals dieses Beins** (jedes Bein = 50 % des
+Gesamtkapitals), zwischen −1 und +1; negativ = short, nie über ±1 (kein
+Hebel). Beispiel: `target_pos = 0.8` bei BTC heißt 80 % des BTC-Beins
+investiert = 40 % des Gesamtkapitals. Der Tagesreport im Action-Log
+zeigt dieselbe Zahl bereits aufs Gesamtkapital umgerechnet. Daraus
+rechnet der tägliche Report den bisherigen Paper-PnL.
 
 ## Was macht das System?
 
