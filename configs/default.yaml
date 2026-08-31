@@ -1,0 +1,65 @@
+# ============================================================
+# BTC Kurzfrist-Prediction — zentrale Konfiguration
+# ============================================================
+# Alle Zeiten UTC. Datenquelle: Binance Vision (Spot, BTCUSDT, 1m-Klines).
+
+data:
+  symbol: BTCUSDT
+  base_interval: 1m          # Rohdaten werden immer als 1m geladen
+  data_dir: data             # Parquet-Ablage (data/BTCUSDT/1m/YYYY-MM.parquet)
+
+# Ziel-Timeframe des Modells: "1m" oder "5m" (5m wird aus 1m aggregiert)
+timeframe: 5m
+
+# ------------------------------------------------------------
+# Trainings-Regime: je 1 Jahr pro Regime (User-Vorgabe).
+# Die Zuordnung ist eine bewusste, dokumentierte Entscheidung —
+# bei Bedarf hier anpassen. Testmonate dürfen sich NICHT mit
+# diesen Fenstern überschneiden (wird im Code erzwungen).
+# ------------------------------------------------------------
+regimes:
+  - name: high_vol            # 2021: zwei Crashes (Mai, Dez), zwei ATH-Läufe
+    start: "2021-01-01"
+    end: "2021-12-31"
+  - name: bear_chop           # 2022: Bärenmarkt, LUNA/FTX-Kaskaden
+    start: "2022-01-01"
+    end: "2022-12-31"
+  - name: bull_trend          # ETF-Rally: Okt 2023 – Sep 2024
+    start: "2023-10-01"
+    end: "2024-09-30"
+
+# ------------------------------------------------------------
+# Label: Vorwärtsrendite über `horizon_bars` Bars (im Ziel-Timeframe),
+# 3 Klassen: up / flat / down. Schwelle = erwartete Round-Trip-Kosten,
+# damit "up" wirklich "handelbar aufwärts" bedeutet.
+# ------------------------------------------------------------
+label:
+  horizon_bars: 3             # 5m-TF: Prognose über die nächsten 15 Minuten
+  threshold_bps: 10           # Klassengrenze in Basispunkten
+
+# ------------------------------------------------------------
+# Modell (LightGBM, Multiclass)
+# ------------------------------------------------------------
+model:
+  num_leaves: 63
+  learning_rate: 0.05
+  n_estimators: 600
+  min_child_samples: 200
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_lambda: 1.0
+  early_stopping_rounds: 50
+  validation_fraction: 0.1    # zeitliches Tail-Split je Regime, kein Random-Split
+
+# ------------------------------------------------------------
+# Kosten & Handelsregel für die Out-of-Sample-Simulation
+# ------------------------------------------------------------
+backtest:
+  fee_bps_per_side: 4.0       # Perp-Taker ~4–5 bps; Spot-Taker eher 10
+  slippage_bps_per_side: 1.0
+  signal_threshold: 0.10      # handle nur wenn P(up) - P(down) > threshold
+  allow_short: true
+
+# Embargo zwischen Training und Test (Bars), verhindert Label-Leakage
+# an den Rändern (Label schaut horizon_bars in die Zukunft).
+embargo_bars: 50
