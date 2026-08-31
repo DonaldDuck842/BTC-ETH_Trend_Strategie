@@ -81,7 +81,8 @@ def momentum_signal(daily: pd.DataFrame, sma_lb: int, donch_lb: int,
 
 def build_positions(daily: pd.DataFrame, funding: pd.Series | None,
                     target_vol: float = 0.40, allow_short: bool = False,
-                    ensemble: bool = False) -> pd.DataFrame:
+                    ensemble: bool = False,
+                    vol_method: str = "rolling20") -> pd.DataFrame:
     close = daily["close"]
     ret = np.log(close).diff()
 
@@ -95,7 +96,14 @@ def build_positions(daily: pd.DataFrame, funding: pd.Series | None,
     else:
         momentum = momentum_signal(daily, 50, 20, allow_short)
 
-    realized = ret.rolling(20).std() * np.sqrt(365)
+    if vol_method == "ewma94":
+        # RiskMetrics-Standard (lambda=0.94, Literatur-Konvention, nicht an
+        # unsere Daten gefittet): schnellere Reaktion auf Vol-Sprvenge als
+        # das rollierende 20d-Fenster. Zero-Mean-EWMA der quadrierten Returns.
+        realized = np.sqrt(ret.pow(2).ewm(alpha=1 - 0.94,
+                                          min_periods=20).mean()) * np.sqrt(365)
+    else:
+        realized = ret.rolling(20).std() * np.sqrt(365)
     size = (target_vol / realized).clip(upper=1.0).fillna(0.0)
 
     overheat = pd.Series(False, index=close.index)
