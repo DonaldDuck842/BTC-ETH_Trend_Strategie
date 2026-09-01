@@ -35,6 +35,12 @@ from btc_predict.data import make_synthetic, resample  # noqa: E402
 # Geo-Block (noetig fuer GitHub-Actions-Runner in den USA); Fallback Haupt-API.
 KLINES_APIS = ("https://data-api.binance.vision/api/v3/klines",
                "https://api.binance.com/api/v3/klines")
+
+# Rebalance-Band (Ausfuehrungsregel, siehe docs/BETRIEBSREGELN.md):
+# gehandelt wird nur, wenn die Zielposition um mehr als diesen Anteil des
+# Bein-Kapitals von gestern abweicht. Der Backtest bezahlt konservativ
+# JEDE taegliche Aenderung — weniger oft handeln kann nur Kosten sparen.
+REBALANCE_BAND = 0.05
 SYMBOLS = ("BTCUSDT", "ETHUSDT")
 WEIGHTS = {"BTCUSDT": 0.5, "ETHUSDT": 0.5}
 LOG_PATH = Path("results/paper_log.csv")
@@ -150,6 +156,13 @@ def main() -> None:
               f"(Tages-Vol {s['sigma_daily_pct']:.2f}%)")
         print(f"    ZIELPOSITION    : {tgt:+.3f} x Portfolio-Kapital "
               f"(Aenderung ggue. gestern: {chg:+.3f})")
+        d_leg = abs(s["pos"] - s["pos_prev"])
+        if d_leg > REBALANCE_BAND:
+            print(f"    >> ORDER HEUTE  : JA — Bein-Position um {d_leg:+.3f} "
+                  f"anpassen (ueber Band {REBALANCE_BAND})")
+        else:
+            print(f"    >> ORDER HEUTE  : nein (Drift {d_leg:.3f} unter "
+                  f"Band {REBALANCE_BAND} — Gebuehren sparen)")
         stop = s["stop_long"] if s["pos"] > 0 else s["stop_short"]
         if s["pos"] != 0:
             print(f"    Orientierungs-Stop (2 Sigma): {stop:,.0f} USD")

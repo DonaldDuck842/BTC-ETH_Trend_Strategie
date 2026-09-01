@@ -18,6 +18,20 @@ passieren nur nach diesen Regeln, nie nach Schlagzeile oder Gefühl.
 - Referenz-Backtest 2018–2026: Sharpe 1.03, CAGR 40.2 %, MaxDD −32.3 %,
   alle Subperioden positiv.
 
+## Ausführungsregel: Rebalance-Band
+
+Das Modell ändert die Zielposition fast täglich, meist minimal
+(Vol-Drift). Der Backtest bezahlt konservativ **jede** dieser Änderungen
+mit 10 bps/Seite (~3.3 % Kosten p.a. sind in allen Kennzahlen enthalten).
+Live gilt daher: **gehandelt wird nur, wenn die Ist-Position um mehr als
+5 % des Bein-Kapitals von der Zielposition abweicht.** Kleine Drifts
+werden ausgesessen (spart Gebühren und kann gegenüber dem Backtest nur
+besser sein), die 1/7-Signalschritte (≈ 14 %) werden immer gehandelt —
+praktisch ergibt das etwa 1–3 Orders pro Woche und Coin. Der tägliche
+Report weist „ORDER HEUTE: JA/nein" direkt aus. Das Band ist eine
+Ausführungs-Vereinfachung, keine Strategie-Änderung; es wird nicht
+nachträglich vergrößert, um Verlusttage zu vermeiden.
+
 ## Paper-Trading-Phase & Go-Live
 
 Vor jedem Einsatz echten Kapitals: **mindestens 60 protokollierte
