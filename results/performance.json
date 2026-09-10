@@ -1,0 +1,68 @@
+{
+ "description": "Fiktives Paper-Trading-Portfolio (kein echtes Geld)",
+ "strategy": "Trendfolge-Ensemble long/short, 50/50 BTC/ETH, Vol-Targeting, 10 bps Kosten/Seite",
+ "start_capital_usd": 100000.0,
+ "start_date": "2026-08-30",
+ "as_of": "2026-09-09",
+ "n_days": 11,
+ "current_equity_usd": 100281.47,
+ "total_return_pct": 0.281,
+ "max_drawdown_pct": -1.875,
+ "series": [
+  {
+   "date": "2026-08-30",
+   "equity_usd": 100000.0,
+   "daily_return_pct": 0.0
+  },
+  {
+   "date": "2026-08-31",
+   "equity_usd": 100898.9,
+   "daily_return_pct": 0.8989
+  },
+  {
+   "date": "2026-09-01",
+   "equity_usd": 99799.48,
+   "daily_return_pct": -1.0896
+  },
+  {
+   "date": "2026-09-02",
+   "equity_usd": 99525.16,
+   "daily_return_pct": -0.2749
+  },
+  {
+   "date": "2026-09-03",
+   "equity_usd": 102197.39,
+   "daily_return_pct": 2.685
+  },
+  {
+   "date": "2026-09-04",
+   "equity_usd": 100916.96,
+   "daily_return_pct": -1.2529
+  },
+  {
+   "date": "2026-09-05",
+   "equity_usd": 101195.83,
+   "daily_return_pct": 0.2763
+  },
+  {
+   "date": "2026-09-06",
+   "equity_usd": 101762.82,
+   "daily_return_pct": 0.5603
+  },
+  {
+   "date": "2026-09-07",
+   "equity_usd": 100942.87,
+   "daily_return_pct": -0.8057
+  },
+  {
+   "date": "2026-09-08",
+   "equity_usd": 100613.84,
+   "daily_return_pct": -0.326
+  },
+  {
+   "date": "2026-09-09",
+   "equity_usd": 100281.47,
+   "daily_return_pct": -0.3303
+  }
+ ]
+}

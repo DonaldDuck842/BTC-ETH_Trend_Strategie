@@ -127,6 +127,69 @@ def paper_pnl(log: pd.DataFrame) -> pd.Series | None:
     return pd.DataFrame(daily_pnl).sum(axis=1).dropna()
 
 
+# --- Fiktives Testportfolio fuer die Webseiten-Anzeige ---------------------
+START_CAPITAL = 100_000.0  # USD, rein fiktive Paper-Rechnung
+EQUITY_CSV = Path("results/equity.csv")
+PERF_JSON = Path("results/performance.json")
+
+
+def export_performance(log: pd.DataFrame) -> dict | None:
+    """Berechnet aus dem Paper-Log die Entwicklung eines fiktiven
+    100.000-USD-Portfolios und schreibt zwei Website-freundliche Dateien:
+    results/equity.csv (Tagesreihe) und results/performance.json
+    (Zusammenfassung + Reihe, direkt per fetch() von raw.githubusercontent
+    ladbar — CORS ist dort offen)."""
+    import json
+
+    days = sorted(log["asof"].unique())
+    if len(days) < 2:
+        return None
+    pnl = paper_pnl(log)
+    if pnl is None:
+        pnl = pd.Series(dtype=float)
+    # Equity-Reihe: Start am ersten Log-Tag, danach compoundiert.
+    equity = {days[0]: START_CAPITAL}
+    for d in days[1:]:
+        prev = equity[list(equity)[-1]]
+        equity[d] = prev * float(np.exp(pnl.get(d, 0.0)))
+    eq = pd.Series(equity)
+    daily_ret_pct = eq.pct_change().fillna(0.0) * 100
+    dd_pct = (eq / eq.cummax() - 1.0) * 100
+
+    piv_pos = log.pivot(index="asof", columns="symbol", values="target_pos")
+    piv_close = log.pivot(index="asof", columns="symbol", values="ref_close")
+    out = pd.DataFrame({
+        "date": eq.index,
+        "equity_usd": eq.round(2).values,
+        "daily_return_pct": daily_ret_pct.round(4).values,
+        "drawdown_pct": dd_pct.round(3).values,
+    }).set_index("date")
+    for sym in SYMBOLS:
+        out[f"{sym.lower()}_target_pos"] = piv_pos.get(sym).round(4)
+        out[f"{sym.lower()}_close"] = piv_close.get(sym)
+    out.to_csv(EQUITY_CSV)
+
+    summary = {
+        "description": "Fiktives Paper-Trading-Portfolio (kein echtes Geld)",
+        "strategy": "Trendfolge-Ensemble long/short, 50/50 BTC/ETH, "
+                    "Vol-Targeting, 10 bps Kosten/Seite",
+        "start_capital_usd": START_CAPITAL,
+        "start_date": days[0],
+        "as_of": days[-1],
+        "n_days": len(days),
+        "current_equity_usd": round(float(eq.iloc[-1]), 2),
+        "total_return_pct": round(float(eq.iloc[-1] / START_CAPITAL - 1) * 100, 3),
+        "max_drawdown_pct": round(float(dd_pct.min()), 3),
+        "series": [
+            {"date": d, "equity_usd": round(float(eq[d]), 2),
+             "daily_return_pct": round(float(daily_ret_pct[d]), 4)}
+            for d in eq.index
+        ],
+    }
+    PERF_JSON.write_text(json.dumps(summary, indent=1))
+    return summary
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--synthetic", action="store_true")
@@ -181,6 +244,15 @@ def main() -> None:
               f"noch rauschig): {sharpe:+.2f}")
     else:
         print("  Paper-PnL: ab 3 protokollierten Tagen")
+
+    perf = export_performance(log)
+    if perf is not None:
+        print(f"\n  TESTPORTFOLIO (fiktiv, Start {perf['start_capital_usd']:,.0f} USD "
+              f"am {perf['start_date']}):")
+        print(f"    Stand {perf['as_of']}: {perf['current_equity_usd']:,.2f} USD "
+              f"({perf['total_return_pct']:+.2f}%) | "
+              f"MaxDD {perf['max_drawdown_pct']:.2f}%")
+        print(f"    Export: {PERF_JSON} + {EQUITY_CSV}")
     print("\n  Hinweis: In Colab results/paper_log.csv nach Drive sichern —")
     print("  die Runtime vergisst alles. Go-Live fruehestens nach der im")
     print("  README registrierten Paper-Phase.")

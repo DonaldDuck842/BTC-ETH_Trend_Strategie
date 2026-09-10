@@ -10,6 +10,7 @@ validiert und täglich automatisch ausgeführt (aktuell im Paper-Trading).
 
 | Was | Wo |
 |---|---|
+| **Testportfolio-Performance** (fiktive 100.000 USD, für Web-Einbindung) | [`results/performance.json`](results/performance.json) · [`results/equity.csv`](results/equity.csv) |
 | **Paper-Trading-Log** (täglich aktualisiert) | [`results/paper_log.csv`](results/paper_log.csv) |
 | **Täglicher Signal-Lauf** (00:10 UTC, automatisch) | [Actions → Daily Signal](../../actions/workflows/daily-signal.yml) |
 | Tagesreport zum Nachlesen | als Artifact an jedem Action-Lauf |
@@ -23,6 +24,16 @@ Hebel). Beispiel: `target_pos = 0.8` bei BTC heißt 80 % des BTC-Beins
 investiert = 40 % des Gesamtkapitals. Der Tagesreport im Action-Log
 zeigt dieselbe Zahl bereits aufs Gesamtkapital umgerechnet. Daraus
 rechnet der tägliche Report den bisherigen Paper-PnL.
+
+**Web-Einbindung:** Das Testportfolio (fiktive 100.000 USD, kein echtes
+Geld) wird täglich fortgeschrieben. Eine Webseite kann die Daten direkt
+laden — CORS ist auf raw.githubusercontent.com offen:
+
+```js
+fetch("https://raw.githubusercontent.com/DonaldDuck842/BTC-Bot/claude/btc-price-prediction-model-de6mnf/results/performance.json")
+  .then(r => r.json())
+  .then(p => console.log(p.current_equity_usd, p.total_return_pct, p.series));
+```
 
 ## Was macht das System?
 

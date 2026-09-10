@@ -3,5 +3,7 @@ __pycache__/
 data/
 results/*
 !results/paper_log.csv
+!results/equity.csv
+!results/performance.json
 .venv/
 .ipynb_checkpoints/
