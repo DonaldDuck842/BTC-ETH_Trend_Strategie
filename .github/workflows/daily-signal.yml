@@ -37,3 +37,11 @@ jobs:
           name: signal-report-${{ github.run_number }}
           path: signal_report.txt
           retention-days: 30
+      - name: Performance-Reihe bauen
+        run: python build_performance.py
+      - name: Ans Dashboard schicken
+        env:
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          DASHBOARD_TOKEN: ${{ secrets.DASHBOARD_TOKEN }}
+          DASHBOARD_STRAT: ${{ secrets.DASHBOARD_STRAT }}
+        run: python push_dashboard.py

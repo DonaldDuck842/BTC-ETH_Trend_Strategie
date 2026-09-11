@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 data/
+output/
 results/*
 !results/paper_log.csv
 !results/equity.csv
