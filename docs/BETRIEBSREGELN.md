@@ -69,6 +69,14 @@ Verfahren ist für Trendfolge eher pessimistisch (es zerschneidet lange
 Trends); die Schwellen sind damit konservativ. P(Rendite über 8 Jahre
 negativ) = 0.2 %.
 
+**Dauer statt Tiefe (Drawdown-Anatomie, `scripts/drawdown_anatomy.py`):**
+Die tiefsten historischen Drawdowns waren keine Crashs, sondern
+schleichend: Seitwärtsmarkt 2024 (−32.3 %, 240 Tage bis zum Tief, **696
+Tage** bis zum neuen Hoch) und Short-Squeezes in Bärenmarkt-Rallys
+(2018/19, 2022). Unterwasser-Phasen von fast **zwei Jahren** sind also
+normal und kein Abschaltgrund — solange die Tiefe im Protokoll oben
+bleibt, gilt: keine Aktion.
+
 Kapital erhöhen oder senken: **nur zu Quartalsterminen**, nie mitten im
 Drawdown und nie nach einer guten Woche.
 
