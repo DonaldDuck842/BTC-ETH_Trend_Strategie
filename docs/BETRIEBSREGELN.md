@@ -44,7 +44,8 @@ Go-Live-Kriterium ist **operativ, nicht performance-basiert**:
 2. Die geloggten Zielpositionen reproduzieren sich aus den Tagesdaten
    (kein Implementierungsdrift).
 3. Die Kapitalgröße wird **vor** Go-Live festgelegt — bemessen daran,
-   dass −32 % davon aushaltbar sind, ohne eingreifen zu wollen.
+   dass **−50 %** davon aushaltbar sind, ohne eingreifen zu wollen (nicht
+   −32 %: der historische Wert war laut Stress-Test Glück, siehe unten).
 
 Der Paper-PnL entscheidet ausdrücklich **nicht** über Go-Live: 60 Tage
 sind statistisches Rauschen. Die Phase prüft den Prozess, nicht die
@@ -54,8 +55,19 @@ Strategie (die ist backtested).
 
 | Live-Drawdown | Aktion |
 |---|---|
-| bis −32 % (historisches Maximum) | Normaler Betrieb, keine Aktion. Das ist der eingepreiste Preis der Strategie. |
-| unter −40 % | **Revalidierungs-Trigger:** System läuft regelkonform weiter; parallel startet eine außerplanmäßige Out-of-Sample-Revalidierung. Abschalten erst nach deren Ergebnis — niemals am selben Tag. |
+| bis −40 % | Normaler Betrieb, keine Aktion. Das ist der typische Drawdown (Median der Stress-Test-Verteilung). |
+| −40 % bis −57 % | Selten, aber erwartbar (jede 2. bis jede 20. Historie). Keine Aktion, keine Kapitaländerung — nur dokumentieren. |
+| unter −57 % | **Revalidierungs-Trigger** (schlechter als 95 % aller simulierten Historien): System läuft regelkonform weiter; parallel startet eine außerplanmäßige Out-of-Sample-Revalidierung. Abschalten erst nach deren Ergebnis — niemals am selben Tag. |
+
+**Kalibrierung (Stress-Test, `scripts/stress_test.py`, 2026-09):** Block-
+Bootstrap der echten BTC/ETH-Renditen, 500 alternative Historien. MaxDD-
+Perzentile: 5 % −57.2 %, Median −39.4 %, 95 % −28.8 %. Der historische
+Backtest-Drawdown von −32.3 % liegt im günstigsten Viertel. Der frühere
+Trigger bei −40 % hätte in 48 % der Historien ausgelöst (Dauer-Fehlalarm)
+und wurde deshalb auf das 5-%-Perzentil verschoben. Das Bootstrap-
+Verfahren ist für Trendfolge eher pessimistisch (es zerschneidet lange
+Trends); die Schwellen sind damit konservativ. P(Rendite über 8 Jahre
+negativ) = 0.2 %.
 
 Kapital erhöhen oder senken: **nur zu Quartalsterminen**, nie mitten im
 Drawdown und nie nach einer guten Woche.

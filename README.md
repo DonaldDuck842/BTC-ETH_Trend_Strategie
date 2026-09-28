@@ -59,7 +59,7 @@ Handelskosten gescheitert (vollständig dokumentiert im
 |---|---|---|
 | Rendite p.a. (CAGR) | **+40.2 %** | +15.4 % |
 | Sharpe-Ratio | **1.03** | 0.20 |
-| Max. Drawdown | **−32.3 %** | −88.3 % |
+| Max. Drawdown | **−32.3 %** (Stress-Test: realistisch −40 %, selten bis −57 %) | −88.3 % |
 | Schwächste Subperiode | +20.3 % p.a. (2023–24) | −26.7 % p.a. (2025–26) |
 | Bärenmarkt-Härtetest 2025–26 | **+22.9 % p.a.** | −26.7 % p.a. |
 
