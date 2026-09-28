@@ -15,6 +15,7 @@ validiert und täglich automatisch ausgeführt (aktuell im Paper-Trading).
 | **Täglicher Signal-Lauf** (00:10 UTC, automatisch) | [Actions → Daily Signal](../../actions/workflows/daily-signal.yml) |
 | Tagesreport zum Nachlesen | als Artifact an jedem Action-Lauf |
 | Phase | **Paper-Trading** (Ziel: ≥ 60 protokollierte Tage vor Go-Live) |
+| Strategie-Status | **Eingefroren seit 2026-09-28** — siehe [Betriebsregeln](docs/BETRIEBSREGELN.md) |
 
 Das Log enthält pro Tag und Coin die Zielposition des Systems und den
 Referenzkurs (`ref_close`, Tagesschluss in USD). **Einheit von
@@ -129,7 +130,7 @@ Dieses Projekt lebt von Disziplin, nicht von Prognosekunst:
   jährliche Revalidierung, News-Disziplin.
 - **[Forschungsprotokoll](docs/RESEARCH_LOG.md)** — jede getestete Idee
   mit vorab registriertem Kriterium und Verdikt: 2 adoptiert,
-  13 beerdigt. Beerdigt heißt beerdigt.
+  21 beerdigt. Beerdigt heißt beerdigt.
 
 Die wichtigste Regel zuletzt: **Am laufenden System wird nicht gebastelt.**
 Jede Änderung geht ausschließlich über eine neue, vorab registrierte Studie.

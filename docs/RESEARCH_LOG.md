@@ -2,7 +2,7 @@
 
 Jede getestete Idee mit vorab registriertem Pass/Fail-Kriterium und
 Verdikt. **Beerdigt heißt beerdigt** — kein Wiederaufmachen, kein
-Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 17 beerdigt.**
+Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 21 beerdigt. Strategie eingefroren am 2026-09-28.**
 
 ## Methodik-Regeln (galten für jedes Experiment)
 
@@ -55,6 +55,10 @@ Gates E1–E3) bestand anschließend alle Gates → Live-Spezifikation.
 | 15 | **4h-Veto-Filter auf die Tagesstrategie** (`scripts/mtf_filter_study.py`: Champion-Member SMA50/Donchian20 auf 4h-Kerzen, Bein flat wenn gegen Tagesrichtung) | Gates M2-M4 durchgefallen: MaxDD -31.9 % vs. -32.3 % (verlangt 3 pp flacher), Sharpe 0.92 vs. 1.03, Kosten-Drag 9.2 % vs. 3.3 % p.a. Basis reproduzierte den Tages-Backtest exakt. Informativ bei 4 bps: Sharpe 1.11 vs. 1.09, MaxDD -27.6 % vs. -31.1 % — Signal hat kleinen Wert, kleiner als Spot-Gebuehren. Nur als neue Studie bei Perp-Umzug denkbar. |
 | 16 | **Seitwaerts-Filter via Efficiency Ratio** (`scripts/er_diagnostic.py`: Strategie-PnL nach ER(20)-Fuenftel vom Vortag) | Vor-Diagnose verneint jeden Filter: Alle Fuenftel netto positiv, auch das seitwaertigste (Q1 ~+32 % p.a.-Aequivalent, Q5 Trend ~+87 %). Kriterium (a)-(c) komplett verfehlt (Q1 positiv, Intervall schliesst 0 ein, nur 2/4 Phasen). Befund: Das Ensemble bremst in unklaren Phasen bereits selbst (Ø Position 0.41 in Q1 vs. 0.60 in Q5). Kein Nachschieben einer Q2/Q3-Regel (Data-Mining). |
 | 17 | **Trailing-Stop-Loss gegen Crashs** | Nicht studienwuerdig laut Vor-Diagnose (`scripts/drawdown_anatomy.py`): nur 1 der 3 tiefsten Drawdowns crash-getrieben (Soll >= 2). Die groessten Verluste entstanden schleichend im Seitwaertsmarkt 2024 (-32.3 %, Crash-Anteil 0.17) und durch Short-Squeezes in Baerenmarkt-Rallys (2018/19, 2022). Long-seitige Crashs sind nicht die Schwachstelle. Short-Stops bewusst NICHT nachgeschoben (aus denselben Daten abgeleitet; Short-Seite netto stark positiv). |
+| 18 | **Ohne Shorts (long/flat-Ensemble)** (`scripts/final_variants.py` V1) | CAGR 25.7 % vs. 40.2 %, Baerenmarkt 2025-26 -1.2 % vs. +22.9 %, Bootstrap 0.43. Short-Beitrag gesamt: BTC +8.4 %, ETH +17.1 % p.a.; Shorts kosten im Bullenmarkt 2023-24 (BTC -13.3 %, ETH -11.5 %), verdienen in Baerenmaerkten. |
+| 19 | **Mindestposition 30 %** (V2) | Praktisch identisch (CAGR 40.0 %, Sharpe 1.07), G2 und G4 verfehlt (Bootstrap 0.78). Das Hin und Her kleiner Positionen kostet kaum. |
+| 20 | **Mindest-Konsens > 2/7** (V3) | Praktisch identisch (CAGR 39.3 %, Sharpe 1.02), Bootstrap 0.32. |
+| 21 | **Strenge Shorts (nur ab -5/7)** (V4) | Knapp: G1-G3 bestanden, CAGR 42.1 %, Sharpe 1.10, MaxDD -26.3 % vs. -32.3 %, aber Bootstrap 0.895 < 0.9875 (Bonferroni fuer 4 Varianten). Aus der Drawdown-Anatomie abgeleitet, also teilweise in-sample. Nicht adoptiert. |
 
 ## Validiert, aber nicht als Handelssignal
 
@@ -74,3 +78,12 @@ verbliebenen Verbesserungsideen in der Zone „erwarteter Nutzen ≈ +0.04
 Sharpe, prinzipiell nicht nachweisbar" liegen. Die Forschungsphase wurde
 daraufhin bewusst geschlossen: Weiteres Signal-Jagen hätte negativen
 Erwartungswert (Datenverbrauch + Overfitting-Risiko).
+
+## Einfrierung (2026-09-28)
+
+Die Strategie ist nach der letzten vorab registrierten Varianten-Runde
+(`scripts/final_variants.py`) **eingefroren**. Keine weiteren Studien auf der
+Historie 2018-2026: Diese Daten sind durch 21 Tests ausgereizt, jeder weitere
+Test waere ueberwiegend Rauschen. Neue Evidenz kommt nur noch aus frischen
+Daten: dem Paper-Trading seit 2026-08-30 und der jaehrlichen Revalidierung
+(erstmals Januar 2027). Einzige Ausnahme: ein dort vorab registrierter Test.

@@ -4,6 +4,14 @@ Alle Regeln sind **vorab registriert** — Eingriffe ins laufende System
 passieren nur nach diesen Regeln, nie nach Schlagzeile oder Gefühl.
 Änderungen an diesem Dokument nur über eine neue, dokumentierte Studie.
 
+## Status: EINGEFROREN (seit 2026-09-28)
+
+Die Spezifikation unten ist endgültig. Die letzte Varianten-Runde (ohne
+Shorts, Mindestposition 30 %, Mindest-Konsens, strenge Shorts) hat keine
+Variante hervorgebracht, die alle vorab festgelegten Hürden besteht.
+Änderungen sind nur noch über die jährliche Revalidierung mit frischen Daten
+möglich, nicht über weitere Tests auf der Historie 2018–2026.
+
 ## Finale Live-Spezifikation (eingefroren, Studie E1–E3 bestanden, 2026-08-31)
 
 - **Universum:** BTCUSDT und ETHUSDT, fixer 50/50-Kapitalsplit.
