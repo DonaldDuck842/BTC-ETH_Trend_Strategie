@@ -2,7 +2,7 @@
 
 Jede getestete Idee mit vorab registriertem Pass/Fail-Kriterium und
 Verdikt. **Beerdigt heißt beerdigt** — kein Wiederaufmachen, kein
-Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 15 beerdigt.**
+Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 16 beerdigt.**
 
 ## Methodik-Regeln (galten für jedes Experiment)
 
@@ -53,6 +53,7 @@ Gates E1–E3) bestand anschließend alle Gates → Live-Spezifikation.
 | 11–13 | **Rekursive Kerze-auf-Kerze-Prognose, Long/flat-Variante als Champion, Einzel-Lookback nach Ensemble-Adoption** | Architektur- bzw. Varianten-Entscheidungen mit dokumentierter Begründung (Fehlerverkettung; long/short schlug long/flat in allen Subperioden; Ensemble-Gates). |
 | 14 | **Voll long ab 80 % Signalstaerke** (`scripts/long_threshold_study.py`: A = Zielposition > 0.8, B = >= 6/7 Filter long; je 100 % long sonst flat) | Beide schwaecher als die Live-Strategie: Sharpe 0.73 / 0.77 vs. 1.03, CAGR +8.8 % / +29.6 % vs. +40.2 %. Mehr Rendite im Bullenmarkt 2023-24 nur marginal (+24.9 % / +34.3 % vs. +20.3 %, B&H +99 %), dafuer Einbruch im Baerenmarkt 2025-26 (-6.4 % / +1.1 % vs. +22.9 %). Befund: Die Short-Seite ist mehr wert als zusaetzliche Bullenmarkt-Partizipation. Keine Schwellen-Iteration. |
 | 15 | **4h-Veto-Filter auf die Tagesstrategie** (`scripts/mtf_filter_study.py`: Champion-Member SMA50/Donchian20 auf 4h-Kerzen, Bein flat wenn gegen Tagesrichtung) | Gates M2-M4 durchgefallen: MaxDD -31.9 % vs. -32.3 % (verlangt 3 pp flacher), Sharpe 0.92 vs. 1.03, Kosten-Drag 9.2 % vs. 3.3 % p.a. Basis reproduzierte den Tages-Backtest exakt. Informativ bei 4 bps: Sharpe 1.11 vs. 1.09, MaxDD -27.6 % vs. -31.1 % — Signal hat kleinen Wert, kleiner als Spot-Gebuehren. Nur als neue Studie bei Perp-Umzug denkbar. |
+| 16 | **Seitwaerts-Filter via Efficiency Ratio** (`scripts/er_diagnostic.py`: Strategie-PnL nach ER(20)-Fuenftel vom Vortag) | Vor-Diagnose verneint jeden Filter: Alle Fuenftel netto positiv, auch das seitwaertigste (Q1 ~+32 % p.a.-Aequivalent, Q5 Trend ~+87 %). Kriterium (a)-(c) komplett verfehlt (Q1 positiv, Intervall schliesst 0 ein, nur 2/4 Phasen). Befund: Das Ensemble bremst in unklaren Phasen bereits selbst (Ø Position 0.41 in Q1 vs. 0.60 in Q5). Kein Nachschieben einer Q2/Q3-Regel (Data-Mining). |
 
 ## Validiert, aber nicht als Handelssignal
 
