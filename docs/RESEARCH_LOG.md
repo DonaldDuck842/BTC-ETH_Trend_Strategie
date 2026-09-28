@@ -2,7 +2,7 @@
 
 Jede getestete Idee mit vorab registriertem Pass/Fail-Kriterium und
 Verdikt. **Beerdigt heißt beerdigt** — kein Wiederaufmachen, kein
-Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 13 beerdigt.**
+Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 14 beerdigt.**
 
 ## Methodik-Regeln (galten für jedes Experiment)
 
@@ -51,6 +51,7 @@ Gates E1–E3) bestand anschließend alle Gates → Live-Spezifikation.
 | 9 | **EWMA-Vol-Sizing** (RiskMetrics λ=0.94) | Gate V2 hauchdünn verfehlt (0.59 vs. 0.62), alle Kennzahlen äquivalent (Sharpe 1.02 vs. 1.03). Bei Gleichstand bleibt der Amtsinhaber; kein λ-Tuning. |
 | 10 | **News-Filter** | Nicht studienwürdig: Mechanismus redundant zu Momentum + Vol-Targeting (der Preis weiß von der News zuerst); keine saubere freie Point-in-Time-News-Historie (Look-Ahead in kuratierten Archiven); strukturell der Zwilling von #3. |
 | 11–13 | **Rekursive Kerze-auf-Kerze-Prognose, Long/flat-Variante als Champion, Einzel-Lookback nach Ensemble-Adoption** | Architektur- bzw. Varianten-Entscheidungen mit dokumentierter Begründung (Fehlerverkettung; long/short schlug long/flat in allen Subperioden; Ensemble-Gates). |
+| 14 | **Voll long ab 80 % Signalstaerke** (`scripts/long_threshold_study.py`: A = Zielposition > 0.8, B = >= 6/7 Filter long; je 100 % long sonst flat) | Beide schwaecher als die Live-Strategie: Sharpe 0.73 / 0.77 vs. 1.03, CAGR +8.8 % / +29.6 % vs. +40.2 %. Mehr Rendite im Bullenmarkt 2023-24 nur marginal (+24.9 % / +34.3 % vs. +20.3 %, B&H +99 %), dafuer Einbruch im Baerenmarkt 2025-26 (-6.4 % / +1.1 % vs. +22.9 %). Befund: Die Short-Seite ist mehr wert als zusaetzliche Bullenmarkt-Partizipation. Keine Schwellen-Iteration. |
 
 ## Validiert, aber nicht als Handelssignal
 
