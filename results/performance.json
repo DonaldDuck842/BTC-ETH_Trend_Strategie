@@ -3,10 +3,10 @@
  "strategy": "Trendfolge-Ensemble long/short, 50/50 BTC/ETH, Vol-Targeting, 10 bps Kosten/Seite",
  "start_capital_usd": 100000.0,
  "start_date": "2026-08-30",
- "as_of": "2026-10-17",
- "n_days": 49,
- "current_equity_usd": 100446.35,
- "total_return_pct": 0.446,
+ "as_of": "2026-10-18",
+ "n_days": 50,
+ "current_equity_usd": 100574.19,
+ "total_return_pct": 0.574,
  "max_drawdown_pct": -6.807,
  "series": [
   {
@@ -253,6 +253,11 @@
    "date": "2026-10-17",
    "equity_usd": 100446.35,
    "daily_return_pct": -0.0399
+  },
+  {
+   "date": "2026-10-18",
+   "equity_usd": 100574.19,
+   "daily_return_pct": 0.1273
   }
  ]
 }
