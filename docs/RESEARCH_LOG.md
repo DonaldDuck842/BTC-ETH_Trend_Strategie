@@ -1,89 +1,89 @@
-# Forschungsprotokoll
+# Research Log
 
-Jede getestete Idee mit vorab registriertem Pass/Fail-Kriterium und
-Verdikt. **Beerdigt heißt beerdigt** — kein Wiederaufmachen, kein
-Nachtunen, auch nicht in Verkleidung. Bilanz: **2 adoptiert, 21 beerdigt. Strategie eingefroren am 2026-09-28.**
+Every tested idea with its pre-registered pass/fail criterion and verdict.
+**Rejected means rejected** — no reopening, no re-tuning, not even in
+disguise. Tally: **2 adopted, 21 rejected. Strategy frozen on 2026-09-28.**
 
-## Methodik-Regeln (galten für jedes Experiment)
+## Method rules (applied to every experiment)
 
-1. **Erfolgsmaß ist Netto-PnL nach realistischen Kosten, nie Accuracy.**
-2. **Vorab registrierte Kriterien:** Pass/Fail wird schriftlich fixiert,
-   bevor der erste echte Datenlauf passiert. Kein Nachverhandeln.
-3. **Testfenster sind Einwegware:** Ein einmal bewerteter Zeitraum wird
-   nie wieder als Test verwendet (Snooping-Log zählt mit).
-4. **Eine Variante statt Sweeps:** Es wird nicht die beste Zelle pro
-   Periode gepickt; Parameter-Raster sind Diagnose, keine Auswahl.
-5. **Synthetik-Nullprobe:** Jede Pipeline muss auf Zufallsdaten ≈ null
-   Edge zeigen, sonst gilt sie als leck.
+1. **Success is measured as net PnL after realistic costs, never as
+   accuracy.**
+2. **Pre-registered criteria:** pass/fail is written down before the
+   first real data run. No renegotiation afterwards.
+3. **Test windows are single-use:** a period that has been evaluated once
+   is never used as a test again (a snooping log keeps count).
+4. **One variant instead of sweeps:** the best cell per period is never
+   picked; parameter grids are diagnostics, not a selection method.
+5. **Synthetic null test:** every pipeline must show ≈ zero edge on random
+   data; otherwise it is considered leaky.
 
-## ✅ Adoptiert
+## ✅ Adopted
 
-### Lookback-Ensemble (Tages-Momentum)
-7 Member (SMA 25–200 × Donchian 0.4×SMA, Konsens-Struktur mit Flat-Zone
-je Member), Position in Siebtel-Schritten. **Alle drei Gates bestanden**
-(alle Subperioden positiv; schlechtester Subperioden-Sharpe 0.29 vs. 0.14;
-Kosten-Drag 3.70 % vs. 4.98 % p.a. — Siebtel-Schritte erzeugen *weniger*
-Turnover als Voll-Flips). Adoption ausdrücklich wegen
-Spezifikations-Robustheit; die In-Sample-Deltas (Sharpe 0.89 vs. 0.75)
-sind kein Evidenz-Claim.
+### Lookback ensemble (daily momentum)
+7 members (SMA 25–200 × Donchian 0.4 × SMA, consensus structure with a
+flat zone per member), position in steps of one seventh. **All three
+gates passed** (all sub-periods profitable; worst sub-period Sharpe 0.29
+vs. 0.14; cost drag 3.70 % vs. 4.98 % p.a. — one-seventh steps create
+*less* turnover than full flips). Adopted explicitly for robustness of the
+specification; the in-sample deltas (Sharpe 0.89 vs. 0.75) are not an
+evidence claim.
 
-### 50/50-Portfolio BTC/ETH + Ensemble beide Beine
-ETH-Bein standalone Sharpe 1.02, in allen Subperioden positiv, robust
-gegen doppelte Kosten und Shortability-Filter (keine ETH-Shorts vor
-Perp-Verfügbarkeit). Das formale Bootstrap-Gate des Portfolios verfehlte
-0.95 knapp (0.893) — der 50/50-Split wurde daher als dokumentierte
-**Risiko-Präferenz-Entscheidung des Betreibers** adoptiert, nicht als
-Signifikanz-Claim. Die finale Studie (Ensemble auf beiden Beinen,
-Gates E1–E3) bestand anschließend alle Gates → Live-Spezifikation.
+### 50/50 BTC/ETH portfolio + ensemble on both legs
+ETH leg standalone Sharpe 1.02, profitable in all sub-periods, robust to
+doubled costs and to a shortability filter (no ETH shorts before
+perpetual futures existed). The portfolio narrowly missed its formal
+bootstrap gate (0.893 vs. 0.95) — the 50/50 split was therefore adopted as
+a documented **risk-preference decision by the operator**, not as a
+significance claim. The final study (ensemble on both legs, gates E1–E3)
+then passed all gates → live specification.
 
-## ⚰️ Beerdigt (chronologisch)
+## ⚰️ Rejected (chronological)
 
-| # | Idee | Kriterium & Ergebnis |
+| # | Idea | Criterion & result |
 |---|---|---|
-| 1 | **5m-Richtungsprognose aus Klines-Features** (LightGBM, up/flat/down) | Eingefrorene Config auf 5 unberührten Monaten: 2/5 positiv bei Maker-Kosten, Brutto-Edge instabil (+13.5 bis −6.7 bps/Trade). Echtes Signal vorhanden (Balanced Accuracy 0.43), aber nicht kostendeckend monetarisierbar. |
-| 2 | **5m-Richtung mit echten Orderflow-Daten** (aggTrades: Taker-Flow, Whale-Trades) | Dev-Sweep zeigte eine einzelne Zelle (11.2 bps/RT) ohne Plateau; eingefrorene Bestätigung auf frischem Monat: 2.4 bps/RT, netto negativ. OFI-Features erschienen nie in den Top-Importances. |
-| 3 | **Funding-Overlay als Tages-Veto** (Extrem-Funding ⇒ flat) | Kostete in *jeder* Periode Rendite, in der es eingriff — es kappte genau die Trends, die es schützen sollte. |
-| 4 | **Einstiegs-Timing der Tages-Flips via 5m-Pfadmodell** („auf den Dip warten") | Gepoolt über 159 Flips / 5.6 Jahre: −5.6 bps/Flip (t = −1.38). Median +0.9, aber fetter linker Tail: Beim Momentum-Ausbruch läuft der Kurs gelegentlich brutal weg (2018–20: −13.4 bps/Flip). |
-| 5 | **Kontinuierliche Positionsgröße** (tanh-Sizing) | Skeptiker-Panel 2:0: sicherer CAGR-Verlust 4–8 pp gegen unmessbaren Sharpe-Gewinn; neuer Freiheitsgrad. |
-| 6 | **Intraday-De-Risking via Pfadmodell** | Panel 2:0: Ziel-Events liegen fast alle in den Trainingsfenstern des Pfadmodells — Test hätte Power ≈ 0; Short-Seite würde Verdiensttage de-risken. |
-| 7 | **Funding-Carry als zweites Standbein** | Panel 2:0: Gegen den ehrlichen Benchmark (4–5 % risikoarm auf Brachkapital) schrumpft der Nutzen auf ~0.5–1 pp und kauft Perp-Liquidations- und Börsen-Gegenparteirisiko ein. |
-| 8 | **Maker-Ausführung als Forschungsprojekt** | Panel 2:0: Fee-Arithmetik trägt auf dem unterstellten Venue nicht; Flips sind informationsgetriebener Flow (Adverse Selection). Realistisch +10–40 bps/Jahr — Live-Detail, kein Experiment. |
-| 9 | **EWMA-Vol-Sizing** (RiskMetrics λ=0.94) | Gate V2 hauchdünn verfehlt (0.59 vs. 0.62), alle Kennzahlen äquivalent (Sharpe 1.02 vs. 1.03). Bei Gleichstand bleibt der Amtsinhaber; kein λ-Tuning. |
-| 10 | **News-Filter** | Nicht studienwürdig: Mechanismus redundant zu Momentum + Vol-Targeting (der Preis weiß von der News zuerst); keine saubere freie Point-in-Time-News-Historie (Look-Ahead in kuratierten Archiven); strukturell der Zwilling von #3. |
-| 11–13 | **Rekursive Kerze-auf-Kerze-Prognose, Long/flat-Variante als Champion, Einzel-Lookback nach Ensemble-Adoption** | Architektur- bzw. Varianten-Entscheidungen mit dokumentierter Begründung (Fehlerverkettung; long/short schlug long/flat in allen Subperioden; Ensemble-Gates). |
-| 14 | **Voll long ab 80 % Signalstaerke** (`scripts/long_threshold_study.py`: A = Zielposition > 0.8, B = >= 6/7 Filter long; je 100 % long sonst flat) | Beide schwaecher als die Live-Strategie: Sharpe 0.73 / 0.77 vs. 1.03, CAGR +8.8 % / +29.6 % vs. +40.2 %. Mehr Rendite im Bullenmarkt 2023-24 nur marginal (+24.9 % / +34.3 % vs. +20.3 %, B&H +99 %), dafuer Einbruch im Baerenmarkt 2025-26 (-6.4 % / +1.1 % vs. +22.9 %). Befund: Die Short-Seite ist mehr wert als zusaetzliche Bullenmarkt-Partizipation. Keine Schwellen-Iteration. |
-| 15 | **4h-Veto-Filter auf die Tagesstrategie** (`scripts/mtf_filter_study.py`: Champion-Member SMA50/Donchian20 auf 4h-Kerzen, Bein flat wenn gegen Tagesrichtung) | Gates M2-M4 durchgefallen: MaxDD -31.9 % vs. -32.3 % (verlangt 3 pp flacher), Sharpe 0.92 vs. 1.03, Kosten-Drag 9.2 % vs. 3.3 % p.a. Basis reproduzierte den Tages-Backtest exakt. Informativ bei 4 bps: Sharpe 1.11 vs. 1.09, MaxDD -27.6 % vs. -31.1 % — Signal hat kleinen Wert, kleiner als Spot-Gebuehren. Nur als neue Studie bei Perp-Umzug denkbar. |
-| 16 | **Seitwaerts-Filter via Efficiency Ratio** (`scripts/er_diagnostic.py`: Strategie-PnL nach ER(20)-Fuenftel vom Vortag) | Vor-Diagnose verneint jeden Filter: Alle Fuenftel netto positiv, auch das seitwaertigste (Q1 ~+32 % p.a.-Aequivalent, Q5 Trend ~+87 %). Kriterium (a)-(c) komplett verfehlt (Q1 positiv, Intervall schliesst 0 ein, nur 2/4 Phasen). Befund: Das Ensemble bremst in unklaren Phasen bereits selbst (Ø Position 0.41 in Q1 vs. 0.60 in Q5). Kein Nachschieben einer Q2/Q3-Regel (Data-Mining). |
-| 17 | **Trailing-Stop-Loss gegen Crashs** | Nicht studienwuerdig laut Vor-Diagnose (`scripts/drawdown_anatomy.py`): nur 1 der 3 tiefsten Drawdowns crash-getrieben (Soll >= 2). Die groessten Verluste entstanden schleichend im Seitwaertsmarkt 2024 (-32.3 %, Crash-Anteil 0.17) und durch Short-Squeezes in Baerenmarkt-Rallys (2018/19, 2022). Long-seitige Crashs sind nicht die Schwachstelle. Short-Stops bewusst NICHT nachgeschoben (aus denselben Daten abgeleitet; Short-Seite netto stark positiv). |
-| 18 | **Ohne Shorts (long/flat-Ensemble)** (`scripts/final_variants.py` V1) | CAGR 25.7 % vs. 40.2 %, Baerenmarkt 2025-26 -1.2 % vs. +22.9 %, Bootstrap 0.43. Short-Beitrag gesamt: BTC +8.4 %, ETH +17.1 % p.a.; Shorts kosten im Bullenmarkt 2023-24 (BTC -13.3 %, ETH -11.5 %), verdienen in Baerenmaerkten. |
-| 19 | **Mindestposition 30 %** (V2) | Praktisch identisch (CAGR 40.0 %, Sharpe 1.07), G2 und G4 verfehlt (Bootstrap 0.78). Das Hin und Her kleiner Positionen kostet kaum. |
-| 20 | **Mindest-Konsens > 2/7** (V3) | Praktisch identisch (CAGR 39.3 %, Sharpe 1.02), Bootstrap 0.32. |
-| 21 | **Strenge Shorts (nur ab -5/7)** (V4) | Knapp: G1-G3 bestanden, CAGR 42.1 %, Sharpe 1.10, MaxDD -26.3 % vs. -32.3 %, aber Bootstrap 0.895 < 0.9875 (Bonferroni fuer 4 Varianten). Aus der Drawdown-Anatomie abgeleitet, also teilweise in-sample. Nicht adoptiert. |
+| 1 | **5-minute direction forecast from candle features** (LightGBM, up/flat/down) | Frozen configuration on 5 untouched months: 2/5 profitable at maker costs, unstable gross edge (+13.5 to −6.7 bps per trade). A real signal (balanced accuracy 0.43), but not enough to cover costs. |
+| 2 | **5-minute direction with real order-flow data** (aggTrades: taker flow, whale trades) | The development sweep showed a single cell (11.2 bps per round trip) without a plateau; frozen confirmation on a fresh month: 2.4 bps per round trip, net negative. Order-flow features never appeared among the top importances. |
+| 3 | **Funding-rate overlay as a daily veto** (extreme funding ⇒ flat) | Cost return in *every* period where it intervened — it cut exactly the trends it was meant to protect. |
+| 4 | **Entry timing of daily flips via the 5-minute path model** ("wait for the dip") | Pooled over 159 flips / 5.6 years: −5.6 bps per flip (t = −1.38). Median +0.9, but a fat left tail: on momentum breakouts the price sometimes runs away sharply (2018–20: −13.4 bps per flip). |
+| 5 | **Continuous position sizing** (tanh sizing) | Skeptic panel 2:0: a certain CAGR loss of 4–8 pp against an unmeasurable Sharpe gain; a new degree of freedom. |
+| 6 | **Intraday de-risking via the path model** | Panel 2:0: the target events lie almost entirely in the path model's training windows — the test would have had power ≈ 0; on the short side it would de-risk the most profitable days. |
+| 7 | **Funding carry as a second pillar** | Panel 2:0: against the honest benchmark (4–5 % low-risk yield on idle capital) the benefit shrinks to ~0.5–1 pp while adding perpetual-futures liquidation and exchange counterparty risk. |
+| 8 | **Maker execution as a research project** | Panel 2:0: the fee arithmetic does not work on the assumed venue; flips are information-driven flow (adverse selection). Realistically +10–40 bps per year — a live detail, not an experiment. |
+| 9 | **EWMA volatility sizing** (RiskMetrics λ = 0.94) | Gate V2 missed by a hair (0.59 vs. 0.62), all metrics equivalent (Sharpe 1.02 vs. 1.03). On a tie the incumbent stays; no λ tuning. |
+| 10 | **News filter** | Not worth a study: the mechanism is redundant to momentum + volatility targeting (the price knows about the news first); no clean, free point-in-time news history (look-ahead in curated archives); structurally the twin of #3. |
+| 11–13 | **Recursive candle-by-candle forecasting, long/flat variant as champion, single lookback after the ensemble adoption** | Architecture and variant decisions with documented reasoning (error compounding; long/short beat long/flat in all sub-periods; ensemble gates). |
+| 14 | **Full long above 80 % signal strength** (`scripts/long_threshold_study.py`: A = target position > 0.8, B = ≥ 6/7 filters long; 100 % long, otherwise flat) | Both weaker than the live strategy: Sharpe 0.73 / 0.77 vs. 1.03, CAGR +8.8 % / +29.6 % vs. +40.2 %. Only marginally more return in the 2023–24 bull market (+24.9 % / +34.3 % vs. +20.3 %; Buy & Hold +99 %), but a collapse in the 2025–26 bear market (−6.4 % / +1.1 % vs. +22.9 %). Finding: the short side is worth more than extra bull-market participation. No threshold iteration. |
+| 15 | **4-hour veto filter on the daily strategy** (`scripts/mtf_filter_study.py`: champion member SMA 50 / Donchian 20 on 4h candles; leg flat when it points against the daily direction) | Gates M2–M4 failed: max. drawdown −31.9 % vs. −32.3 % (required: 3 pp shallower), Sharpe 0.92 vs. 1.03, cost drag 9.2 % vs. 3.3 % p.a. The baseline reproduced the daily backtest exactly. Informational at 4 bps: Sharpe 1.11 vs. 1.09, max. drawdown −27.6 % vs. −31.1 % — the signal has a small value, smaller than spot fees. Only conceivable as a new study after a move to perpetual futures. |
+| 16 | **Sideways filter via efficiency ratio** (`scripts/er_diagnostic.py`: strategy PnL by quintile of the prior-day 20-day efficiency ratio) | The preliminary diagnostic rules out any filter: all quintiles net profitable, even the most sideways one (Q1 ≈ +32 % p.a. equivalent, Q5 trend ≈ +87 %). Criteria (a)–(c) all missed (Q1 positive, interval includes 0, only 2/4 phases). Finding: the ensemble already brakes on its own in unclear phases (average position 0.41 in Q1 vs. 0.60 in Q5). No Q2/Q3 rule mined afterwards (data mining). |
+| 17 | **Trailing stop-loss against crashes** | Not worth a study according to the preliminary diagnostic (`scripts/drawdown_anatomy.py`): only 1 of the 3 deepest drawdowns was crash-driven (required: ≥ 2). The largest losses came slowly in the 2024 sideways market (−32.3 %, crash share 0.17) and from short squeezes in bear-market rallies (2018/19, 2022). Long-side crashes are not the weak point. Short-side stops deliberately NOT added (derived from the same data; the short side is strongly net positive). |
+| 18 | **No shorts (long/flat ensemble)** (`scripts/final_variants.py` V1) | CAGR 25.7 % vs. 40.2 %, bear market 2025–26 −1.2 % vs. +22.9 %, bootstrap 0.43. Short contribution overall: BTC +8.4 %, ETH +17.1 % p.a.; shorts cost money in the 2023–24 bull market (BTC −13.3 %, ETH −11.5 %) and earn it in bear markets. |
+| 19 | **Minimum position 30 %** (V2) | Practically identical (CAGR 40.0 %, Sharpe 1.07); G2 and G4 missed (bootstrap 0.78). Switching small positions back and forth costs very little. |
+| 20 | **Minimum consensus > 2/7** (V3) | Practically identical (CAGR 39.3 %, Sharpe 1.02), bootstrap 0.32. |
+| 21 | **Strict shorts (only at ≤ −5/7)** (V4) | Close: G1–G3 passed, CAGR 42.1 %, Sharpe 1.10, max. drawdown −26.3 % vs. −32.3 %, but bootstrap 0.895 < 0.9875 (Bonferroni correction for 4 variants). Derived from the drawdown anatomy, i.e. partly in-sample. Not adopted. |
 
-## Validiert, aber nicht als Handelssignal
+## Validated, but not as a trading signal
 
-**5m-Pfadmodell** (`btc_predict/path_model.py`): Quantilregression je
-Horizont, ehrlich kalibrierter Unsicherheitskegel (Coverage 0.79–0.81 bei
-Soll 0.80), Exkursions-Prognosen mit +12–18 % Pinball-Skill.
-**Erkenntnis der ganzen Kurzfrist-Phase:** *Wie stark* sich der Markt
-bewegt, ist prognostizierbar — *wohin* und *wann*, nicht. Das Modell
-dient daher als Anzeige- und Stop-Werkzeug, nie als Richtungs- oder
-Timing-Quelle.
+**5-minute path model** (`btc_predict/path_model.py`): quantile regression
+per horizon, an honestly calibrated uncertainty cone (coverage 0.79–0.81
+vs. a target of 0.80), excursion forecasts with +12–18 % pinball skill.
+**The lesson of the entire short-term phase:** *how much* the market moves
+is predictable — *where* and *when* is not. The model therefore serves as
+a display and stop tool, never as a source of direction or timing.
 
-## Verdikt-Besonderheit, festgehalten
+## A notable verdict
 
-Bei der Multi-Asset-Frage kamen zwei unabhängige Skeptiker-Panels in zwei
-Läufen zu entgegengesetzten 2:0-Urteilen — Beleg dafür, dass alle
-verbliebenen Verbesserungsideen in der Zone „erwarteter Nutzen ≈ +0.04
-Sharpe, prinzipiell nicht nachweisbar" liegen. Die Forschungsphase wurde
-daraufhin bewusst geschlossen: Weiteres Signal-Jagen hätte negativen
-Erwartungswert (Datenverbrauch + Overfitting-Risiko).
+On the multi-asset question, two independent skeptic panels reached
+opposite 2:0 verdicts in two runs — evidence that all remaining
+improvement ideas lie in the zone of "expected benefit ≈ +0.04 Sharpe,
+impossible to prove in principle". The research phase was therefore
+closed deliberately: further signal hunting would have had a negative
+expected value (data consumption + overfitting risk).
 
-## Einfrierung (2026-09-28)
+## Freeze (2026-09-28)
 
-Die Strategie ist nach der letzten vorab registrierten Varianten-Runde
-(`scripts/final_variants.py`) **eingefroren**. Keine weiteren Studien auf der
-Historie 2018-2026: Diese Daten sind durch 21 Tests ausgereizt, jeder weitere
-Test waere ueberwiegend Rauschen. Neue Evidenz kommt nur noch aus frischen
-Daten: dem Paper-Trading seit 2026-08-30 und der jaehrlichen Revalidierung
-(erstmals Januar 2027). Einzige Ausnahme: ein dort vorab registrierter Test.
+After the last pre-registered variant round (`scripts/final_variants.py`),
+the strategy is **frozen**. No further studies on the 2018–2026 history:
+this data has been exhausted by 21 tests, and any further test would be
+mostly noise. New evidence comes only from fresh data: the paper trading
+since 2026-08-30 and the yearly revalidation (first in January 2027).
+The only exception is a test pre-registered there.

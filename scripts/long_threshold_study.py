@@ -20,7 +20,7 @@ mit Vol-Targeting) und Buy-and-Hold 50/50.
 Einordnung: Beide Varianten sind long-only mit vollem Einsatz OHNE
 Vol-Targeting — hoehere Drawdowns sind strukturell zu erwarten. Der Lauf ist
 eine Studie auf der bereits verbrauchten Historie 2018-2026; eine Adoption
-braeuchte zusaetzlich die Gates aus docs/BETRIEBSREGELN.md.
+braeuchte zusaetzlich die Gates aus docs/OPERATING_RULES.md.
 
     python scripts/long_threshold_study.py              # echter Lauf (Colab)
     python scripts/long_threshold_study.py --synthetic  # Smoke-Test

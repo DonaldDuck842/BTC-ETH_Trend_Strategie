@@ -36,7 +36,7 @@ from btc_predict.data import make_synthetic, resample  # noqa: E402
 KLINES_APIS = ("https://data-api.binance.vision/api/v3/klines",
                "https://api.binance.com/api/v3/klines")
 
-# Rebalance-Band (Ausfuehrungsregel, siehe docs/BETRIEBSREGELN.md):
+# Rebalance-Band (Ausfuehrungsregel, siehe docs/OPERATING_RULES.md):
 # gehandelt wird nur, wenn die Zielposition um mehr als diesen Anteil des
 # Bein-Kapitals von gestern abweicht. Der Backtest bezahlt konservativ
 # JEDE taegliche Aenderung — weniger oft handeln kann nur Kosten sparen.
